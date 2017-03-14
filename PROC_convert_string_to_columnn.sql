@@ -3,18 +3,20 @@ use tempdb
 go
 
 /*  @example :
-    use tempdb
-    go
-
-    select * from ( N'one/two/three/four/five', '/' ) 
+        use tempdb
+        go
+        select * from ( N'one/two/three/four/five', '/' ) 
 */
+if object_id('STRING_TO_COLUMN') is not null
+    drop function STRING_TO_COLUMN;
 
-create function String_to_column(  @str nvarchar(max), @delimeter nchar(1) )
-    
+create function STRING_TO_COLUMN(  @str varchar(max), @delimeter char(1) )
+
     /*  don't forget to click on Star ;) if u like it
     */
     returns @t table ( name nvarchar(max) )
-    as BEGIN
+    as 
+    BEGIN
 	
         declare @i int
         set @i = CHARINDEX(@delimeter, @str)
@@ -26,7 +28,7 @@ create function String_to_column(  @str nvarchar(max), @delimeter nchar(1) )
     			        insert @t values ( left(@str, @i - 1) );
 
 	    		        set @str = right( @str, len(@str) - @i )
-		    	        set @i = CHARINDEX( @delimeter, @str )
+		    	        set @i = charindex( @delimeter, @str )
 			   	        continue;
     		        end;
 
