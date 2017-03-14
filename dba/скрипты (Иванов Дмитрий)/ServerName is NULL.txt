@@ -1,8 +1,0 @@
-select @@SERVERNAME
-go
-sp_dropserver 'SRV-STAT-DB02'
-go
-sp_addserver 'SRV-STAT-DB02', 'local'
-go
-select @@SERVERNAME
-go

@@ -1,3 +1,0 @@
-select  name  from dbo.syscolumns where id in
-(select object_id('dbo.ServiceStatsAll'))
-order by name

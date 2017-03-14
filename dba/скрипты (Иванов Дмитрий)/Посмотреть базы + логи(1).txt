@@ -1,2 +1,0 @@
-SELECT  name, physical_name, database_id, file_id, state_desc, size
-FROM sys.master_files

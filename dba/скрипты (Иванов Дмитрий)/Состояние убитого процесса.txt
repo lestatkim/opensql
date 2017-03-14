@@ -1,1 +1,0 @@
-KILL <spid> WITH STATUSONLY;

@@ -1,1 +1,0 @@
-UPDATE STATISTICS [твоя таблица] WITH FULLSCAN

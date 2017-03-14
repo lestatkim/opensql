@@ -1,8 +1,0 @@
-
-UPDATE [ws1].[dbo].[LogotonMap]
-SET LogotonType='PaymentRequest'
-	,LogotonFilename='33'
-	WHERE id = '109074558'
-	AND idPartnerItem = '94516315'
-	AND idCodeGroup = '293'
-	

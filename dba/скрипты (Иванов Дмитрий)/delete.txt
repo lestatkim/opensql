@@ -1,4 +1,0 @@
-DELETE FROM dbo.LogotonMap 
-WHERE id = 252638336
-AND idPartnerItem = 247570280
-AND idCodeGroup = 458

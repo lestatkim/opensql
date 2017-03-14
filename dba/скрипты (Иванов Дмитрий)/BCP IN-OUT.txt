@@ -1,5 +1,0 @@
-"C:\Program Files\Microsoft SQL Server\110\Tools\Binn\"bcp.exe [TravelStatistic].[dbo].[VisitorTrackingSession] out G:\TEMP\VisitorTrackingSession.dat -c -t "|" -r "\r\n" -T -E -S . 
-
-"C:\Program Files\Microsoft SQL Server\110\Tools\Binn\"bcp.exe [TravelStatistic].[dbo].[VisitorTrackingSession] format nul -f G:\TEMP\VisitorTrackingSession.fmt -c -T
-
-"C:\Program Files\Microsoft SQL Server\110\Tools\Binn\"bcp.exe [TravelStatistic].[dbo].[VisitorTrackingSession] in G:\TEMP\VisitorTrackingSession.dat -c -t "|" -r "\r\n"  -T  

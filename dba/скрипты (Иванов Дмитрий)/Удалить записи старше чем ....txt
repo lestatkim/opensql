@@ -1,4 +1,0 @@
-DECLARE @olddate datetime;
-SET @olddate = DATEADD(MONTH, -4, GETDATE())
-DELETE TOP (1000) FROM [Billing].[dbo].[Operations] 
-WHERE RegistrationDateUtc<@olddate

@@ -1,2 +1,0 @@
-SELECT DISTINCT statement
-  FROM fn_get_audit_file('D:\MSSQL_Audit\Audit-Update_dbo%8Subscriptions_66C1F80C-2CFA-4F26-A360-9FF2E6976FE2_0_129790574557030000.sqlaudit', default, default)

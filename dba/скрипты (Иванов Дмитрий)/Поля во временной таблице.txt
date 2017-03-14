@@ -1,5 +1,0 @@
-select * into #t from dbo.Contracts
-	where 1=0
---собственно сам просмотр списка
-select  [name]  from tempdb.dbo.syscolumns where id = object_id('tempdb..#t')
-drop table #t

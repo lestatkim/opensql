@@ -1,2 +1,0 @@
-ALTER DATABASE <Имя базы>
-SET PARTNER OFF

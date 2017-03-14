@@ -1,5 +1,0 @@
-
-
-Вначале пробуем отключить и включить точку
---ALTER ENDPOINT Mirroring STATE = STOPPED 
---ALTER ENDPOINT Mirroring STATE = STARTED 
