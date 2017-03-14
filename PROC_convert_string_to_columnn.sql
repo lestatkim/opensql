@@ -1,4 +1,5 @@
 --
+<<<<<<< HEAD
 -- Convert string to column
 -- arguments : (string, delimeter)
 -- example : select * from (N'one/two/three/four/five', '/')
@@ -11,6 +12,18 @@ CREATE FUNCTION string_to_column(
 returns @t table (
 	name nvarchar(max)
 )
+=======
+/*	Parse string to table
+	arguments : (string, delimeter)
+	example : select * from (N'one/two/three/four/five', '/')
+*/
+
+CREATE FUNCTION string_to_table(
+	 @str nvarchar(max)
+	,@delimeter nchar(1)
+)
+returns @t table ( name nvarchar(max) )
+>>>>>>> a90bc14a79430bb5d3904bc26306c0579432910b
 as BEGIN
 		
 	declare @i int
@@ -32,3 +45,9 @@ as BEGIN
 
 return
 END
+<<<<<<< HEAD
+=======
+
+
+
+>>>>>>> a90bc14a79430bb5d3904bc26306c0579432910b
