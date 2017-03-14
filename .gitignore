@@ -1,2 +1,4 @@
 *.pyc
 .git
+.gitignore
+README.md
