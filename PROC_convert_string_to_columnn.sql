@@ -16,8 +16,8 @@ create function String_to_column(  @str nvarchar(max), @delimeter nchar(1) )
     returns @t table ( name nvarchar(max) )
     as BEGIN
 	
-	    declare @i int
-    	set @i = CHARINDEX(@delimeter, @str)
+        declare @i int
+        set @i = CHARINDEX(@delimeter, @str)
 
 	    while 1 = 1 begin
     		if @i != 0 begin
