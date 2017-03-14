@@ -1,10 +1,10 @@
 --
--- Parse string to table
+-- Convert string to column
 -- arguments : (string, delimeter)
 -- example : select * from (N'one/two/three/four/five', '/')
 
 
-CREATE FUNCTION string_to_table(
+CREATE FUNCTION string_to_column(
 	 @str nvarchar(max)
 	,@delimeter nchar(1)
 )
