@@ -1,13 +1,14 @@
+--
 /*	Parse string to table
 	arguments : (string, delimeter)
 	example : select * from (N'one/two/three/four/five', '/')
 */
 
-create function string_to_table(
+CREATE FUNCTION string_to_table(
 	 @str nvarchar(max)
 	,@delimeter nchar(1)
 )
-returns @t table (name nvarchar(max))
+returns @t table ( name nvarchar(max) )
 as BEGIN
 		
 	declare @i int;
@@ -30,10 +31,6 @@ as BEGIN
 
 return
 END
-
-set @i = null;
-set @t = null;
-go
 
 
 
