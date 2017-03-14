@@ -36,5 +36,5 @@ create function String_to_column(  @str nvarchar(max), @delimeter nchar(1) )
     return
     END
 
---https://github.com/lestatkim/opensql
+--github@lestatkim/opensql
 
