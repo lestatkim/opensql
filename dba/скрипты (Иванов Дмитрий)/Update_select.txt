@@ -1,0 +1,9 @@
+	
+UPDATE dbo.LogotonMap
+SET 
+ idPartnerItem = b.idPartnerItem
+,idCodeGroup = b.idCodeGroup
+FROM dbo.LogotonMap a 
+INNER JOIN [SRV-BKND].backendSQL.dbo.LogotonMap b ON a.id = b.id
+AND b.idPartnerItem IS NOT NULL
+AND b.id = a.id

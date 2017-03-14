@@ -1,0 +1,1 @@
+DBCC LOG ('db_name',3)

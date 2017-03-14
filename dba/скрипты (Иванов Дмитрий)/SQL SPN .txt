@@ -1,0 +1,14 @@
+EXEC sp_addlinkedserver @server='LSTest',
+                                                 @srvproduct='srv-stat-db02.i-free.pro',
+                                                 @provider='SQLNCLI',
+                                                 @datasrc='EpsStats',--the data source
+                                                 @provstr='Integrated Security=SSPI'; 
+                                                 
+                                                 
+select * from sys.servers where name='LSTest'
+exec sp_addlinkedsrvlogin 'SRV-EPS-STATS', 'true'
+
+select S.name,uses_self_credential as delegation
+from sys.linked_logins as L, sys.servers as S
+where S.server_id=L.server_id
+            and S.name=N'SRV-EPS-STATS'

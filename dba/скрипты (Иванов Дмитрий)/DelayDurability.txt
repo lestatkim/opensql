@@ -1,0 +1,15 @@
+https://habrahabr.ru/post/303156/
+
+При его включении запись в лог происходит только, когда Log Buffer полностью заполнен. Включить Delayed Durability можно для всей базы:
+
+ALTER DATABASE TT SET DELAYED_DURABILITY = FORCED
+GO
+
+или для отдельных транзакций:
+
+ALTER DATABASE TT SET DELAYED_DURABILITY = ALLOWED
+GO
+
+BEGIN TRANSACTION t
+...
+COMMIT TRANSACTION t WITH (DELAYED_DURABILITY = ON)

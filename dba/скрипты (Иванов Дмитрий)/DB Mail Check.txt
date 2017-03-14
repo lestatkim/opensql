@@ -1,0 +1,3 @@
+EXEC sysmail_help_status_sp
+EXEC sysmail_stop_sp
+EXEC sysmail_start_sp

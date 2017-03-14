@@ -1,0 +1,1 @@
+SELECT rows FROM sys.sysindexes WHERE name= 'PK_Subscriptions'

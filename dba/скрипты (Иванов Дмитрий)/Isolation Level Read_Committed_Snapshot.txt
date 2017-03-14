@@ -1,0 +1,16 @@
+--Посмотреть уровень изоляции
+SELECT
+name
+,is_read_committed_snapshot_on
+FROM
+sys.databases AS d
+ORDER BY
+d.name
+
+
+
+ALTER DATABASE [BackendSQL]
+    SET READ_COMMITTED_SNAPSHOT ON WITH ROLLBACK IMMEDIATE;
+GO   
+ALTER DATABASE [BackendSQL]
+    SET ALLOW_SNAPSHOT_ISOLATION ON;

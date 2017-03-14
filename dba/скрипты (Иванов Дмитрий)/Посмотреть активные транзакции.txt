@@ -1,0 +1,1 @@
+DBCC OPENTRAN (tempdb)

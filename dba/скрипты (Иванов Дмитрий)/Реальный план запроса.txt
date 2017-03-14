@@ -1,0 +1,6 @@
+SET STATISTICS PROFILE ON 
+GO
+--здесь анализируемый скрипт
+GO
+SET STATISTICS PROFILE OFF
+GO

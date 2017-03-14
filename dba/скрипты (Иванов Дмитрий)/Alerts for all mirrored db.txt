@@ -1,0 +1,470 @@
+--##############################################################
+--## Creates WMI Mirroring alerts for all Mirrored databases
+--## ===========================================================
+--## The following script assumes your mirroring is working and 
+--## SQL Job "Database Mirroring Monitor Job" is running every 
+--## minute or so.
+--## 0.1 - BETA Release
+--## 0.2 - Published to SSC
+--## 0.3 - Removed private email address from Operator
+--## 0.4 - Changes @include_event_description_in to 1 for Threshold based alerts
+--## 0.5 - Added Threshold Creation via sp_dbmmonitorchangealert
+--## 0.6 - Changed Threshold alerts to <all databases> as DB level do not seem to work
+--## See More: http://www.sqlservercentral.com/Forums/Topic1029139-2854-1.aspx#bm1084290
+--## 0.7 - Added usp_dbmmonitorresults_EmailMode to the installer (see below)
+--## 0.8 - Added auto-job creation and linkage on the threshold tasks
+--## USAGE: find replace idimas@i-free.com with your email address then run on msdb
+--##############################################################
+
+--#### Set Scope, ALWAYS run this on the MSDB database
+USE [msdb]
+GO
+
+--#### Create your Mirroring Operator (Replacing any that exist with same name)
+IF EXISTS (SELECT name FROM msdb.dbo.sysoperators WHERE name = N'Admins_MirrorAlerts')
+EXEC msdb.dbo.sp_delete_operator @name=N'Admins_MirrorAlerts'
+GO
+EXEC msdb.dbo.sp_add_operator @name=N'Admins_MirrorAlerts', 
+@enabled=1, 
+@weekday_pager_start_time=0, 
+@weekday_pager_end_time=235959, 
+@saturday_pager_start_time=0, 
+@saturday_pager_end_time=235959, 
+@sunday_pager_start_time=0, 
+@sunday_pager_end_time=235959, 
+@pager_days=127, 
+@email_address=N'idimas@i-free.com', 
+@category_name=N'[Uncategorized]'
+GO
+
+--#### Delete old Mirroring Alerts (based on DMB prefix)
+DECLARE @Cursor_MirrorAlerts CURSOR 
+DECLARE @AlertName nvarchar(128)
+
+SET @Cursor_MirrorAlerts = CURSOR FAST_FORWARD 
+FOR 
+SELECT [name] FROM msdb.dbo.sysalerts WHERE [name] LIKE 'DBM%'
+
+OPEN @Cursor_MirrorAlerts 
+FETCH NEXT FROM @Cursor_MirrorAlerts 
+INTO @AlertName 
+
+WHILE @@FETCH_STATUS = 0 
+BEGIN 
+EXEC msdb.dbo.sp_delete_alert @name = @AlertName
+FETCH NEXT FROM @Cursor_MirrorAlerts 
+INTO @AlertName
+END 
+
+CLOSE @Cursor_MirrorAlerts 
+DEALLOCATE @Cursor_MirrorAlerts 
+
+--#### Create the Main Stored Procedure that creates alerts
+USE [msdb]
+GO
+IF EXISTS ( SELECT *
+ FROM sys.objects
+ WHERE object_id = OBJECT_ID(N'[dbo].[usp_CreateMirroringAlerts]')
+ AND type IN ( N'P', N'PC' ) ) 
+ DROP PROCEDURE [dbo].[usp_CreateMirroringAlerts]
+GO
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:<Jordon Pilling | www.heavencore.co.uk>
+-- Create date: <23/11/2010>
+-- Description:Creates Mirroring Alerts for all the different state changes etc
+-- Created based on Article: http://technet.microsoft.com/en-us/library/cc966392.aspx
+-- Note, Alerts regarding witness server are commented out, simply uncomment to include
+-- =============================================
+CREATE PROCEDURE usp_CreateMirroringAlerts
+@DatabaseName NVARCHAR(255)
+AS
+BEGIN
+SET NOCOUNT ON;
+
+DECLARE @ReturnCode INT ;
+DECLARE @namespace NVARCHAR(200) ;
+DECLARE @wquery NVARCHAR(200) ;
+DECLARE @alertName NVARCHAR(200) ;
+DECLARE @dbName NVARCHAR(128) ;
+DECLARE @instanceName NVARCHAR(128) ;
+DECLARE @Threshold_AlertsResponseDelay INT ;
+DECLARE @Threshold_OldestUnsentTransaction INT ;
+DECLARE @Threshold_UnsentLogSize INT ;
+DECLARE @Threshold_UnrestoredLogSize INT ;
+DECLARE @Threshold_MirrorCommitOverhead INT ;
+DECLARE @Threshold_RetentionPeriod INT ;
+DECLARE @Mirroring_StatusEmailJob UNIQUEIDENTIFIER ;
+
+--#### Settings, feel free to change these
+SET @Threshold_AlertsResponseDelay= 600;--#### In Seconds
+SET @Threshold_OldestUnsentTransaction= 30;--#### In Minutes
+SET @Threshold_UnsentLogSize= 10240;--#### In KB
+SET @Threshold_UnrestoredLogSize= 10240;--#### In KB
+SET @Threshold_MirrorCommitOverhead= 1000;--#### In Milliseconds
+SET @Threshold_RetentionPeriod= 12;--#### In Hours ( i.e: How long to keep the alerts in the database mirroring status table)
+
+--#### Grab the JOB ID of JOB 'DBM: Email Mirror Status'
+SELECT @Mirroring_StatusEmailJob = job_id FROM msdb.dbo.sysjobs_view WHERE name = N'DBM: Email Mirror Status'
+IF @Mirroring_StatusEmailJob IS NULL
+BEGIN
+RAISERROR('Unable to build alerts, Job [DBM: Email Mirror Status] could not be found', 16, 1)
+RETURN
+END
+
+--#### Determine Instance Name
+IF ( SERVERPROPERTY('InstanceName') IS NOT NULL ) 
+SELECT @instanceName = CONVERT(NVARCHAR(128), SERVERPROPERTY('InstanceName')) ;
+ELSE 
+SELECT @instanceName = N'MSSQLSERVER' ;
+
+--#### Check the Alert 'type' of 'Database Mirroring' exists, create if not
+IF NOT EXISTS ( SELECT name FROM msdb.dbo.syscategories WHERE name = N'Database Mirroring' AND category_class = 2 ) 
+BEGIN
+EXEC @ReturnCode = msdb.dbo.sp_add_category @class = N'ALERT', @type = N'NONE', @name = N'Database Mirroring' ;
+IF ( @@ERROR <> 0 OR @ReturnCode <> 0 ) 
+GOTO Quit_Alert ;
+END ;
+
+--#### Paramater Sniffing Precaution - not really applicable, but old habbits die hard and all that
+SET @dbName = @DatabaseName ; 
+
+--#### Set Alert Thresholds for the given database, feel free to change these
+EXEC sp_dbmmonitorchangealert @dbName, 1, @Threshold_OldestUnsentTransaction, 1 ;--#### Oldest unsent transaction: Enable and set to @Threshold_OldestUnsentTransaction Minutes
+EXEC sp_dbmmonitorchangealert @dbName, 2, @Threshold_UnsentLogSize, 1 ;--#### Unsent log: Enable and set to @Threshold_UnsentLogSize KB
+EXEC sp_dbmmonitorchangealert @dbName, 3, @Threshold_UnrestoredLogSize, 1 ;--#### Unrestored log: Enable and set to @Threshold_UnrestoredLogSize KB
+EXEC sp_dbmmonitorchangealert @dbName, 4, @Threshold_MirrorCommitOverhead, 1 ;--#### Mirror commit overhead: Enable and set to @Threshold_MirrorCommitOverhead seconds
+EXEC sp_dbmmonitorchangealert @dbName, 5, @Threshold_RetentionPeriod, 1 ;--#### Retention period: Enable and set to @Threshold_RetentionPeriod hours
+
+--#### Create Threshold Based Alerts if they dont already exist
+
+--#### Create [DBM Perf: Unsent Log Threshold]
+SELECT @alertName = N'DBM Perf: Unsent Log Threshold (All Databases)' ;
+IF NOT EXISTS (SELECT name FROM msdb.dbo.sysalerts WHERE name = @alertName)
+BEGIN
+EXEC msdb.dbo.sp_add_alert @name = @alertName, @category_name = N'Database Mirroring', @database_name = N'', @message_id = 32042, @severity = 0, @delay_between_responses = @Threshold_AlertsResponseDelay, @include_event_description_in = 1, @notification_message=N'You will receive another email shortly detailing the problematic databases.', @enabled = 1, @job_id = @Mirroring_StatusEmailJob ;
+EXEC msdb.dbo.sp_add_notification @alert_name = @alertName, @operator_name = N'Admins_MirrorAlerts', @notification_method = 1
+END
+--#### Create [DBM Perf: Oldest Unsent Transaction Threshold]
+SELECT @alertName = N'DBM Perf: Oldest Unsent Transaction Threshold (All Databases)' ;
+IF NOT EXISTS (SELECT name FROM msdb.dbo.sysalerts WHERE name = @alertName)
+BEGIN
+EXEC msdb.dbo.sp_add_alert @name = @alertName, @category_name = N'Database Mirroring', @database_name = N'', @message_id = 32040, @severity = 0, @delay_between_responses = @Threshold_AlertsResponseDelay, @include_event_description_in = 1, @notification_message=N'You will receive another email shortly detailing the problematic databases.', @enabled = 1, @job_id = @Mirroring_StatusEmailJob ;
+EXEC msdb.dbo.sp_add_notification @alert_name = @alertName, @operator_name = N'Admins_MirrorAlerts', @notification_method = 1
+END
+--#### Create [DBM Perf: Unrestored Log Threshold]
+SELECT @alertName = N'DBM Perf: Unrestored Log Threshold (All Databases)' ;
+IF NOT EXISTS (SELECT name FROM msdb.dbo.sysalerts WHERE name = @alertName)
+BEGIN
+EXEC msdb.dbo.sp_add_alert @name = @alertName, @category_name = N'Database Mirroring', @database_name = N'', @message_id = 32043, @severity = 0, @delay_between_responses = @Threshold_AlertsResponseDelay, @include_event_description_in = 1, @notification_message=N'You will receive another email shortly detailing the problematic databases.', @enabled = 1, @job_id = @Mirroring_StatusEmailJob ;
+EXEC msdb.dbo.sp_add_notification @alert_name = @alertName, @operator_name = N'Admins_MirrorAlerts', @notification_method = 1
+END
+--#### Create [DBM Perf: Mirror Commit Overhead Threshold]
+SELECT @alertName = N'DBM Perf: Mirror Commit Overhead Threshold (All Databases)' ;
+IF NOT EXISTS (SELECT name FROM msdb.dbo.sysalerts WHERE name = @alertName)
+BEGIN
+EXEC msdb.dbo.sp_add_alert @name = @alertName, @category_name = N'Database Mirroring', @database_name = N'', @message_id = 32044, @severity = 0, @delay_between_responses = @Threshold_AlertsResponseDelay, @include_event_description_in = 1, @notification_message=N'You will receive another email shortly detailing the problematic databases.', @enabled = 1, @job_id = @Mirroring_StatusEmailJob ;
+EXEC msdb.dbo.sp_add_notification @alert_name = @alertName, @operator_name = N'Admins_MirrorAlerts', @notification_method = 1
+END
+
+--#### Create WMI based alerts (State Changes)
+
+--#### Create [DBM State: Principal Connection Lost (<dbname>)]
+SELECT @namespace = N'\\.\root\Microsoft\SqlServer\ServerEvents\' + @instanceName ;
+SELECT @wquery = N'SELECT * from DATABASE_MIRRORING_STATE_CHANGE WHERE State = 5 AND DatabaseName = ''' + @dbName + '''' ;
+SELECT @alertName = N'DBM State: Principal Connection Lost (' + @dbName + ')' ;
+EXEC msdb.dbo.sp_add_alert @name = @alertName, @message_id = 0, @severity = 0, @enabled = 1, @delay_between_responses = 0, @include_event_description_in = 0, @category_name = N'Database Mirroring', @wmi_namespace = @namespace, @wmi_query = @wquery ;
+EXEC msdb.dbo.sp_add_notification @alert_name = @alertName, @operator_name = N'Admins_MirrorAlerts', @notification_method = 1
+--#### Create [DBM State: Mirror Connection Lost (<dbname>)]
+SELECT @namespace = N'\\.\root\Microsoft\SqlServer\ServerEvents\' + @instanceName ;
+SELECT @wquery = N'SELECT * from DATABASE_MIRRORING_STATE_CHANGE WHERE State = 6 AND DatabaseName = ''' + @dbName + '''' ;
+SELECT @alertName = N'DBM State: Mirror Connection Lost (' + @dbName + ')' ;
+EXEC msdb.dbo.sp_add_alert @name = @alertName, @message_id = 0, @severity = 0, @enabled = 1, @delay_between_responses = 0, @include_event_description_in = 0, @category_name = N'Database Mirroring', @wmi_namespace = @namespace, @wmi_query = @wquery ;
+EXEC msdb.dbo.sp_add_notification @alert_name = @alertName, @operator_name = N'Admins_MirrorAlerts', @notification_method = 1
+--#### Create [DBM State: Manual Failover (<dbname>)]
+SELECT @namespace = N'\\.\root\Microsoft\SqlServer\ServerEvents\' + @instanceName ;
+SELECT @wquery = N'SELECT * from DATABASE_MIRRORING_STATE_CHANGE WHERE State = 7 AND DatabaseName = ''' + @dbName + '''' ;
+SELECT @alertName = N'DBM State: Manual Failover (' + @dbName + ')' ;
+EXEC msdb.dbo.sp_add_alert @name = @alertName, @message_id = 0, @severity = 0, @enabled = 1, @delay_between_responses = 0, @include_event_description_in = 0, @category_name = N'Database Mirroring', @wmi_namespace = @namespace, @wmi_query = @wquery ;
+EXEC msdb.dbo.sp_add_notification @alert_name = @alertName, @operator_name = N'Admins_MirrorAlerts', @notification_method = 1
+--#### Create [DBM State: Automatic Failover (<dbname>)]
+SELECT @namespace = N'\\.\root\Microsoft\SqlServer\ServerEvents\' + @instanceName ;
+SELECT @wquery = N'SELECT * from DATABASE_MIRRORING_STATE_CHANGE WHERE State = 8 AND DatabaseName = ''' + @dbName + '''' ;
+SELECT @alertName = N'DBM State: Automatic Failover (' + @dbName + ')' ;
+EXEC msdb.dbo.sp_add_alert @name = @alertName, @message_id = 0, @severity = 0, @enabled = 1, @delay_between_responses = 0, @include_event_description_in = 0, @category_name = N'Database Mirroring', @wmi_namespace = @namespace, @wmi_query = @wquery ;
+EXEC msdb.dbo.sp_add_notification @alert_name = @alertName, @operator_name = N'Admins_MirrorAlerts', @notification_method = 1
+--#### Create [DBM State: Mirroring Suspended (<dbname>)]
+SELECT @namespace = N'\\.\root\Microsoft\SqlServer\ServerEvents\' + @instanceName ;
+SELECT @wquery = N'SELECT * from DATABASE_MIRRORING_STATE_CHANGE WHERE State = 9 AND DatabaseName = ''' + @dbName + '''' ;
+SELECT @alertName = N'DBM State: Mirroring Suspended (' + @dbName + ')' ;
+EXEC msdb.dbo.sp_add_alert @name = @alertName, @message_id = 0, @severity = 0, @enabled = 1, @delay_between_responses = 0, @include_event_description_in = 0, @category_name = N'Database Mirroring', @wmi_namespace = @namespace, @wmi_query = @wquery ;
+EXEC msdb.dbo.sp_add_notification @alert_name = @alertName, @operator_name = N'Admins_MirrorAlerts', @notification_method = 1
+--#### Create [DBM State: No Quorum (<dbname>)]
+SELECT @namespace = N'\\.\root\Microsoft\SqlServer\ServerEvents\' + @instanceName ;
+SELECT @wquery = N'SELECT * from DATABASE_MIRRORING_STATE_CHANGE WHERE State = 10 AND DatabaseName = ''' + @dbName + '''' ;
+SELECT @alertName = N'DBM State: No Quorum (' + @dbName + ')' ;
+EXEC msdb.dbo.sp_add_alert @name = @alertName, @message_id = 0, @severity = 0, @enabled = 1, @delay_between_responses = 0, @include_event_description_in = 0, @category_name = N'Database Mirroring', @wmi_namespace = @namespace, @wmi_query = @wquery ;
+EXEC msdb.dbo.sp_add_notification @alert_name = @alertName, @operator_name = N'Admins_MirrorAlerts', @notification_method = 1
+--#### Create [DBM State: Synchronizing Mirror (<dbname>)]
+SELECT @namespace = N'\\.\root\Microsoft\SqlServer\ServerEvents\' + @instanceName ;
+SELECT @wquery = N'SELECT * from DATABASE_MIRRORING_STATE_CHANGE WHERE State = 11 AND DatabaseName = ''' + @dbName + '''' ;
+SELECT @alertName = N'DBM State: Synchronizing Mirror (' + @dbName + ')' ;
+EXEC msdb.dbo.sp_add_alert @name = @alertName, @message_id = 0, @severity = 0, @enabled = 1, @delay_between_responses = 0, @include_event_description_in = 0, @category_name = N'Database Mirroring', @wmi_namespace = @namespace, @wmi_query = @wquery ;
+EXEC msdb.dbo.sp_add_notification @alert_name = @alertName, @operator_name = N'Admins_MirrorAlerts', @notification_method = 1
+--#### Create [DBM State: Principal Running Exposed (<dbname>)]
+SELECT @namespace = N'\\.\root\Microsoft\SqlServer\ServerEvents\' + @instanceName ;
+SELECT @wquery = N'SELECT * from DATABASE_MIRRORING_STATE_CHANGE WHERE State = 12 AND DatabaseName = ''' + @dbName + '''' ;
+SELECT @alertName = N'DBM State: Principal Running Exposed (' + @dbName + ')' ;
+EXEC msdb.dbo.sp_add_alert @name = @alertName, @message_id = 0, @severity = 0, @enabled = 1, @delay_between_responses = 0, @include_event_description_in = 0, @category_name = N'Database Mirroring', @wmi_namespace = @namespace, @wmi_query = @wquery ;
+EXEC msdb.dbo.sp_add_notification @alert_name = @alertName, @operator_name = N'Admins_MirrorAlerts', @notification_method = 1
+--#### Create [DBM State: Synchronizing Principal (<dbname>)]
+SELECT @namespace = N'\\.\root\Microsoft\SqlServer\ServerEvents\' + @instanceName ;
+SELECT @wquery = N'SELECT * from DATABASE_MIRRORING_STATE_CHANGE WHERE State = 13 AND DatabaseName = ''' + @dbName + '''' ;
+SELECT @alertName = N'DBM State: Synchronizing Principal (' + @dbName + ')' ;
+EXEC msdb.dbo.sp_add_alert @name = @alertName, @message_id = 0, @severity = 0, @enabled = 1, @delay_between_responses = 0, @include_event_description_in = 0, @category_name = N'Database Mirroring', @wmi_namespace = @namespace, @wmi_query = @wquery ;
+EXEC msdb.dbo.sp_add_notification @alert_name = @alertName, @operator_name = N'Admins_MirrorAlerts', @notification_method = 1
+
+----#### Create [DBM State: Synchronized Principal with Witness (<dbname>)]
+--SELECT @namespace = N'\\.\root\Microsoft\SqlServer\ServerEvents\' + @instanceName ;
+--SELECT @wquery = N'SELECT * from DATABASE_MIRRORING_STATE_CHANGE WHERE State = 1 AND DatabaseName = ''' + @dbName + '''' ;
+--SELECT @alertName = N'DBM State: Synchronized Principal with Witness (' + @dbName + ')' ;
+--EXEC msdb.dbo.sp_add_alert @name = @alertName, @message_id = 0, @severity = 0, @enabled = 0, @delay_between_responses = 0, @include_event_description_in = 0, @category_name = N'Database Mirroring', @wmi_namespace = @namespace, @wmi_query = @wquery ;
+----#### Create [DBM State: Synchronized Principal without Witness (<dbname>)]
+--SELECT @namespace = N'\\.\root\Microsoft\SqlServer\ServerEvents\' + @instanceName ;
+--SELECT @wquery = N'SELECT * from DATABASE_MIRRORING_STATE_CHANGE WHERE State = 2 AND DatabaseName = ''' + @dbName + '''' ;
+--SELECT @alertName = N'DBM State: Synchronized Principal without Witness (' + @dbName + ')' ;
+--EXEC msdb.dbo.sp_add_alert @name = @alertName, @message_id = 0, @severity = 0, @enabled = 0, @delay_between_responses = 0, @include_event_description_in = 0, @category_name = N'Database Mirroring', @wmi_namespace = @namespace, @wmi_query = @wquery ;
+----#### Create [DBM State: Synchronized Mirror with Witness (<dbname>)]
+--SELECT @namespace = N'\\.\root\Microsoft\SqlServer\ServerEvents\' + @instanceName ;
+--SELECT @wquery = N'SELECT * from DATABASE_MIRRORING_STATE_CHANGE WHERE State = 3 AND DatabaseName = ''' + @dbName + '''' ;
+--SELECT @alertName = N'DBM State: Synchronized Mirror with Witness (' + @dbName + ')' ;
+--EXEC msdb.dbo.sp_add_alert @name = @alertName, @message_id = 0, @severity = 0, @enabled = 0, @delay_between_responses = 0, @include_event_description_in = 0, @category_name = N'Database Mirroring', @wmi_namespace = @namespace, @wmi_query = @wquery ;
+----#### Create [DBM State: Synchronized Mirror without Witness (<dbname>)]
+--SELECT @namespace = N'\\.\root\Microsoft\SqlServer\ServerEvents\' + @instanceName
+--SELECT @wquery = N'SELECT * from DATABASE_MIRRORING_STATE_CHANGE WHERE State = 4 AND DatabaseName = ''' + @dbName + ''''
+--SELECT @alertName = N'DBM State: Synchronized Mirror without Witness (' + @dbName + ')'
+--EXEC msdb.dbo.sp_add_alert @name = @alertName, @message_id = 0, @severity = 0, @enabled = 0, @delay_between_responses = 0, @include_event_description_in = 0, @category_name = N'Database Mirroring', @wmi_namespace = @namespace, @wmi_query = @wquery ;
+
+Quit_Alert:
+
+END
+GO
+
+--#### Install usp_dbmmonitorresults_EmailMode
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[usp_dbmmonitorresults_EmailMode]') AND type in (N'P', N'PC'))
+DROP PROCEDURE [dbo].[usp_dbmmonitorresults_EmailMode]
+GO
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:<Jordon Pilling | www.heavencore.co.uk>
+-- Create date: <29/03/2011>
+-- Description:Runs sys.sp_dbmmonitorresults on ALL mirrored databases
+-- and emails the results AS a HTML table
+-- =============================================
+CREATE PROCEDURE [dbo].[usp_dbmmonitorresults_EmailMode]
+AS 
+ BEGIN
+--#### Update core stats (this is usally done by job "Database Mirroring Monitor Job")
+SET NOCOUNT ON;
+
+ EXEC sys.sp_dbmmonitorupdate
+
+ DECLARE @HTML_Body VARCHAR(MAX)
+ DECLARE @HTML_Head VARCHAR(MAX)
+ DECLARE @HTML_Tail VARCHAR(MAX)
+
+ DECLARE @Cursor_MirroredDatabases CURSOR 
+ DECLARE @command CHAR(256)
+ DECLARE @MirroredDatabaseName NVARCHAR(128)
+ DECLARE @MirrorStats TABLE
+ (
+ database_name SYSNAME , -- Name of database 
+ role TINYINT , -- 1 = Principal, 2 = Mirror 
+ mirroring_state TINYINT , -- 0 = Suspended, 1 = Disconnected, 2 = Synchronizing, 3 = Pending Failover, 4 = Synchronized 
+ witness_status TINYINT , -- 1 = Connected, 2 = Disconnected 
+ log_generation_rate INT NULL , -- in kb / sec 
+ unsent_log INT , -- in kb 
+ send_rate INT NULL , -- in kb / sec 
+ unrestored_log INT , -- in kb 
+ recovery_rate INT NULL , -- in kb / sec 
+ transaction_delay INT NULL , -- in ms 
+ transactions_per_sec INT NULL , -- in trans / sec 
+ average_delay INT , -- in ms 
+ time_recorded DATETIME ,
+ time_behind DATETIME ,
+ local_time DATETIME -- Added for UI 
+ ) 
+
+SET @Cursor_MirroredDatabases = CURSOR FAST_FORWARD 
+FOR 
+SELECT DB_NAME(database_id) AS [DatabaseName] FROM sys.database_mirroring WHERE mirroring_guid IS NOT NULL
+
+OPEN @Cursor_MirroredDatabases 
+FETCH NEXT FROM @Cursor_MirroredDatabases 
+INTO @MirroredDatabaseName 
+
+ WHILE @@FETCH_STATUS = 0 
+ BEGIN
+--#### Run the monitor (and update the main table)
+ SET @command = N'sys.sp_dbmmonitorresults ''' + REPLACE(@MirroredDatabaseName, N'''', N'''''') + N''',0,0' 
+ INSERT INTO @MirrorStats
+ EXEC ( @command ) 
+ FETCH NEXT FROM @Cursor_MirroredDatabases 
+ INTO @MirroredDatabaseName
+ END 
+
+ CLOSE @Cursor_MirroredDatabases 
+ DEALLOCATE @Cursor_MirroredDatabases 
+
+ SET @HTML_Head = '<html>'
+ SET @HTML_Head = @HTML_Head + '<head>' + CHAR(13) + CHAR(10) ;
+ SET @HTML_Head = @HTML_Head + ' <style>' + CHAR(13) + CHAR(10) ;
+ SET @HTML_Head = @HTML_Head + ' body{font-family: arial; font-size: 13px;}table{font-family: arial; font-size: 13px; border-collapse: collapse;width:100%} td {padding: 2px;height:15px;border:solid 1px black;} th {padding: 2px;background-color:black;color:white;border:solid 1px black;}' + CHAR(13) + CHAR(10) ;
+ SET @HTML_Head = @HTML_Head + ' </style>' + CHAR(13) + CHAR(10) ;
+ SET @HTML_Head = @HTML_Head + '</head>' + CHAR(13) + CHAR(10) ;
+ SET @HTML_Head = @HTML_Head + '<body><b>Below is a list of Mirrored Databases and their current mirror state.</b><hr />' + CHAR(13) + CHAR(10) ;
+ SET @HTML_Head = @HTML_Head + '<b>Roles: </b>1 = Principal, 2 = Mirror<br />' + CHAR(13) + CHAR(10) ;
+ SET @HTML_Head = @HTML_Head + '<b>Mirror State: </b>0 = Suspended, 1 = Disconnected, 2 = Synchronizing, 3 = Pending Failover, 4 = Synchronized<br />' + CHAR(13) + CHAR(10) ;
+ SET @HTML_Head = @HTML_Head + '<b>Witness State: </b>0 = n/a, 1 = Connected, 2 = Disconnected<br /><br />' + CHAR(13) + CHAR(10) ;
+ SET @HTML_Head = @HTML_Head + '<table>' + CHAR(13) + CHAR(10) ;
+ SET @HTML_Head = @HTML_Head + ' <tr>' + CHAR(13) + CHAR(10) ;
+ SET @HTML_Head = @HTML_Head + ' <th>Database</th>' + CHAR(13) + CHAR(10) ;
+ SET @HTML_Head = @HTML_Head + ' <th>Role</th>' + CHAR(13) + CHAR(10) ;
+ SET @HTML_Head = @HTML_Head + ' <th>Mirror State</th>' + CHAR(13) + CHAR(10) ;
+ SET @HTML_Head = @HTML_Head + ' <th>Witness Status</th>' + CHAR(13) + CHAR(10) ;
+ SET @HTML_Head = @HTML_Head + ' <th>Log Generation Rate (KB/sec)</th>' + CHAR(13) + CHAR(10) ;
+ SET @HTML_Head = @HTML_Head + ' <th>Unsent Log (KB)</th>' + CHAR(13) + CHAR(10) ;
+ SET @HTML_Head = @HTML_Head + ' <th>Send Rate (KB/sec)</th>' + CHAR(13) + CHAR(10) ;
+ SET @HTML_Head = @HTML_Head + ' <th>Unrestored Log (KB)</th>' + CHAR(13) + CHAR(10) ;
+ SET @HTML_Head = @HTML_Head + ' <th>Recovery Rate (KB/sec)</th>' + CHAR(13) + CHAR(10) ;
+ SET @HTML_Head = @HTML_Head + ' <th>Transaction Delay (ms)</th>' + CHAR(13) + CHAR(10) ;
+ SET @HTML_Head = @HTML_Head + ' <th>Transactions per sec</th>' + CHAR(13) + CHAR(10) ;
+ SET @HTML_Head = @HTML_Head + ' <th>Avg Delay (ms)</th>' + CHAR(13) + CHAR(10) ;
+ SET @HTML_Head = @HTML_Head + ' <th>Time Recorded</th>' + CHAR(13) + CHAR(10) ;
+ SET @HTML_Head = @HTML_Head + ' <th>Time Behind</th>' + CHAR(13) + CHAR(10) ;
+ SET @HTML_Head = @HTML_Head + ' </tr>' + CHAR(13) + CHAR(10) ;
+ SET @HTML_Tail = '</table></body></html>' ; 
+
+ SET @HTML_Body = @HTML_Head + ( SELECT database_name AS [TD] ,
+ role AS [TD] ,
+ mirroring_state AS [TD] ,
+ witness_status AS [TD] ,
+ log_generation_rate AS [TD] ,
+ unsent_log AS [TD] ,
+ send_rate AS [TD] ,
+ unrestored_log AS [TD] ,
+ recovery_rate AS [TD] ,
+ transaction_delay AS [TD] ,
+ transactions_per_sec AS [TD] ,
+ average_delay AS [TD] ,
+ time_recorded AS [TD] ,
+ time_behind AS [TD]
+ FROM @MirrorStats
+ ORDER BY database_name
+ FOR
+ XML RAW('tr') ,
+ ELEMENTS
+ ) + @HTML_Tail
+
+--#### Send the finished Email
+ EXEC msdb.dbo.sp_send_dbmail 
+@recipients = 'idimas@i-free.com', 
+@subject = 'DMB: Current Mirror Status (All Databases)', 
+@body = @HTML_Body, 
+@body_format = 'HTML' ;
+ END
+
+
+GO
+
+--#### Install a SQL job that will run usp_dbmmonitorresults_EmailMode
+IF EXISTS (SELECT job_id FROM msdb.dbo.sysjobs_view WHERE name = N'DBM: Email Mirror Status')
+EXEC msdb.dbo.sp_delete_job @job_name=N'DBM: Email Mirror Status', @delete_unused_schedule=1
+GO
+
+BEGIN TRANSACTION
+DECLARE @ReturnCode INT
+SELECT @ReturnCode = 0
+IF NOT EXISTS (SELECT name FROM msdb.dbo.syscategories WHERE name=N'[Uncategorized (Local)]' AND category_class=1)
+BEGIN
+EXEC @ReturnCode = msdb.dbo.sp_add_category @class=N'JOB', @type=N'LOCAL', @name=N'[Uncategorized (Local)]'
+IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback
+
+END
+
+DECLARE @jobId BINARY(16)
+EXEC @ReturnCode = msdb.dbo.sp_add_job @job_name=N'DBM: Email Mirror Status', 
+@enabled=1, 
+@notify_level_eventlog=0, 
+@notify_level_email=0, 
+@notify_level_netsend=0, 
+@notify_level_page=0, 
+@delete_level=0, 
+@description=N'DBM: Email Mirror Status', 
+@category_name=N'[Uncategorized (Local)]', 
+@owner_login_name=N'sa', @job_id = @jobId OUTPUT
+IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback
+EXEC @ReturnCode = msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'EXEC usp_dbmmonitorresults_EmailMode', 
+@step_id=1, 
+@cmdexec_success_code=0, 
+@on_success_action=1, 
+@on_success_step_id=0, 
+@on_fail_action=2, 
+@on_fail_step_id=0, 
+@retry_attempts=0, 
+@retry_interval=0, 
+@os_run_priority=0, @subsystem=N'TSQL', 
+@command=N'EXEC usp_dbmmonitorresults_EmailMode', 
+@database_name=N'msdb', 
+@flags=0
+IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback
+EXEC @ReturnCode = msdb.dbo.sp_update_job @job_id = @jobId, @start_step_id = 1
+IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback
+EXEC @ReturnCode = msdb.dbo.sp_add_jobserver @job_id = @jobId, @server_name = N'(local)'
+IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback
+COMMIT TRANSACTION
+GOTO EndSave
+QuitWithRollback:
+ IF (@@TRANCOUNT > 0) ROLLBACK TRANSACTION
+EndSave:
+
+GO
+
+--#### Loop through each mirrored database and call the above SP to create its alerts
+DECLARE @Cursor_MirroredDatabases CURSOR 
+DECLARE @MirroredDatabaseName nvarchar(128)
+
+SET @Cursor_MirroredDatabases = CURSOR FAST_FORWARD 
+FOR 
+SELECT DB_NAME(database_id) AS [DatabaseName] FROM sys.database_mirroring WHERE mirroring_guid IS NOT NULL
+
+OPEN @Cursor_MirroredDatabases 
+FETCH NEXT FROM @Cursor_MirroredDatabases 
+INTO @MirroredDatabaseName 
+
+WHILE @@FETCH_STATUS = 0 
+BEGIN 
+EXEC msdb.dbo.usp_CreateMirroringAlerts @DatabaseName = @MirroredDatabaseName
+FETCH NEXT FROM @Cursor_MirroredDatabases 
+INTO @MirroredDatabaseName
+END 
+
+CLOSE @Cursor_MirroredDatabases 
+DEALLOCATE @Cursor_MirroredDatabases 
+
+--#### Clean Up
+USE [msdb]
+GO
+IF EXISTS ( SELECT *
+ FROM sys.objects
+ WHERE object_id = OBJECT_ID(N'[dbo].[usp_CreateMirroringAlerts]')
+ AND type IN ( N'P', N'PC' ) ) 
+ DROP PROCEDURE [dbo].[usp_CreateMirroringAlerts]
+GO
+

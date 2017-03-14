@@ -1,0 +1,1 @@
+BACKUP LOG SubscriptionService TO DISK='NUL:'

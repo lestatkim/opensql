@@ -1,0 +1,29 @@
+-- чаще срабатывает, если указать не им€ файла, а его номер. хз почему так
+GO
+DBCC SHRINKFILE (2,10000)
+
+
+USE [db]
+GO
+DBCC SHRINKFILE (N'db_log' , 0)
+GO
+
+
+USE db;
+GO
+SELECT file_id, name, physical_name, size
+FROM sys.database_files;
+GO
+DBCC SHRINKFILE (N'db_log', TRUNCATEONLY);
+GO
+
+/*–адикальный способ - об€зательно сделать фулл бэкап после него
+¬озможно повторить несколько раз и выполнить отдельно по шагам и подождать!!!
+*/
+USE »м€Ѕазы
+ALTER DATABASE »м€Ѕазы SET RECOVERY SIMPLE
+DBCC SHRINKFILE (»м€‘айлаЋога, ∆елаемый–азмер);
+ALTER DATABASE »м€Ѕазы SET RECOVERY FULL
+
+
+sp_spaceused

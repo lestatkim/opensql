@@ -1,0 +1,11 @@
+     SELECT DB_NAME(ISNULL(s.dbid,1)) AS [Имя базы данных]
+          , c.session_id              AS [ID сессии]
+          , t.scheduler_id            AS [Номер процессора]
+          , s.text                    AS [Текст SQL-запроса]
+       FROM sys.dm_exec_connections   AS c
+CROSS APPLY master.sys.dm_exec_sql_text(c.most_recent_sql_handle) AS s
+       JOIN sys.dm_os_tasks t
+         ON t.session_id = c.session_id
+        AND t.task_state = 'RUNNING'
+        AND ISNULL(s.dbid,1) > 4
+   ORDER BY c.session_id DESC

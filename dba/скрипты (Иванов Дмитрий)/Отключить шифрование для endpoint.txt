@@ -1,0 +1,2 @@
+select * from sys.endpoints
+ALTER ENDPOINT Mirroring FOR DATABASE_MIRRORING, ENCRYPTION =  DISABLED

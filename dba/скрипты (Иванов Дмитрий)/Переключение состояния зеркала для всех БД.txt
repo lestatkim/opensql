@@ -1,0 +1,28 @@
+-- ***** Переводит все зеркалируемые БД в состояние PAUSE *****
+USE [master]
+-- *** Объявление курсора для выборки ***
+DECLARE db_mirr INSENSITIVE CURSOR FOR
+            (SELECT
+                [name]
+            FROM sys.database_mirroring M
+                INNER JOIN sys.databases DB
+                      ON M.database_id=DB.database_id
+            WHERE mirroring_state IS NOT NULL)
+        FOR READ ONLY 
+        DECLARE @sql nvarchar(128), @db nvarchar (128)
+        OPEN db_mirr  
+        
+              WHILE 1=1
+      BEGIN
+-- *** Вывод в переменную @db из курсора ***
+          FETCH NEXT FROM db_mirr INTO @db
+            --breaking loop when cursor records finish
+            IF @@FETCH_STATUS < 0          
+                  BREAK
+        
+        SET @sql=   'ALTER DATABASE ['+@db+'] SET PARTNER SUSPEND'
+EXEC(@sql);
+  END
+
+      CLOSE db_mirr
+      DEALLOCATE db_mirr  

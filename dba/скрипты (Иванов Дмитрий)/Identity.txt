@@ -1,0 +1,32 @@
+Вставка с автоматическим идентити - off
+
+SET IDENTITY_INSERT [ws1].[dbo].[PartnersMedia] off
+INSERT INTO [ws1].[dbo].[PartnersMedia] ( [idPartner]
+      ,[idMedia]
+      ,[Type]
+      ,[State]
+      ,[Modified]
+      ,[Hits]
+      ,[idPrice]
+      ,[ReadOnly]
+      ,[idMeType]
+      ,[Rating]
+      ,[Price])
+  VALUES (7501,9608,3,4,'2010-10-05 13:20:19.767',0,4,0,3,0,6900)
+
+Вставка с ручным идентити - on
+
+SET IDENTITY_INSERT [ws1].[dbo].[PartnersMedia] off
+INSERT INTO [ws1].[dbo].[PartnersMedia] ( [id]
+      ,[idPartner]
+      ,[idMedia]
+      ,[Type]
+      ,[State]
+      ,[Modified]
+      ,[Hits]
+      ,[idPrice]
+      ,[ReadOnly]
+      ,[idMeType]
+      ,[Rating]
+      ,[Price])
+  VALUES (5555,7501,9608,3,4,'2010-10-05 13:20:19.767',0,4,0,3,0,6900)

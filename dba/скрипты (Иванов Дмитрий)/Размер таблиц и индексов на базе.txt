@@ -1,0 +1,83 @@
+DBCC UPDATEUSAGE (0)
+create table #t(name varchar(255), row varchar(255), reserved varchar(255), data varchar(255), inxex_size varchar(255), unused varchar(255))
+
+insert into #t
+exec sp_msforeachtable N'exec sp_spaceused ''?''' 
+
+select * from #t order by CONVERT(bigint,REPLACE(data,' KB','')) DESC
+drop table #t
+
+
+_________________________________________
+
+
+declare
+	@tmpTable TABLE (
+		[RowCount] int,
+		[TableName] nvarchar(max)
+	)
+declare
+	@ResultTable TABLE (
+		[name] nvarchar(max),
+		[rows] int,
+		[reserverd] nvarchar(max),
+		[data] nvarchar(max),
+		[index_size] nvarchar(max),
+		[unused] nvarchar(max)
+	)
+insert into
+	@tmpTable ([RowCount], [TableName])
+		SELECT
+			[RowCount] = MAX(si.rows),
+			[TableName] = so.name
+		FROM
+			sysobjects so,
+			sysindexes si
+		WHERE
+			1=1
+			AND so.xtype = 'U'
+			AND si.id = OBJECT_ID(so.name)
+		GROUP BY
+			so.name
+		ORDER BY 2 DESC
+
+declare
+	@cursor cursor, @tablename varchar(max)
+set
+	@cursor = cursor for
+	select
+		[TableName]
+	from @tmpTable
+
+open @cursor
+while 1=1
+begin fetch
+	from @cursor into @tablename
+
+	if @@fetch_status <> 0 break
+
+	insert into
+		@ResultTable (
+			[name],
+			[rows],
+			[reserverd],
+			[data],
+			[index_size],
+			[unused]
+	)
+
+	exec sp_spaceused @tablename
+end
+
+select
+	[name],
+	ROUND((CAST(REPLACE(data, 'KB', '') as float)/ 1024), 2) as DataInMb,
+	[rows],
+	[reserverd],
+	[data],
+	[index_size],
+	[unused]
+from
+	@ResultTable
+order by
+	(CAST(REPLACE(data, 'KB', '') as int)) desc

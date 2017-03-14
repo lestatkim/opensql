@@ -1,0 +1,7 @@
+USE [master]
+GO
+CREATE DATABASE [EpsStats] ON 
+( FILENAME = N'E:\MSSQL_Data\EpsStats.mdf' ),
+( FILENAME = N'E:\MSSQL_Data\EpsStats.ndf' )
+ FOR ATTACH_REBUILD_LOG
+GO

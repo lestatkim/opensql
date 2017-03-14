@@ -1,0 +1,1 @@
+DBCC INDEXDEFRAG (InfoFlowServices2, "dbo.Messages", IX_ExternalID)

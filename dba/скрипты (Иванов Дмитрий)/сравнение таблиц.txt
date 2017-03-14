@@ -1,0 +1,1 @@
+tablediff -sourceserver srv-bknd-db01 -sourcedatabase BackendSQL -sourcetable AggregatorOperators -sourcepassword <pass> -sourceuser <user> -destinationserver srv-pro-db03 -destinationdatabase ws1 -destinationpassword <pass> -destinationuser <user> -o c:\LostData.sql

@@ -1,0 +1,17 @@
+EXEC sp_help_agent_parameter
+EXEC sp_help_agent_profile @agent_type = 3
+
+Тип агента.
+1 = агент моментальных снимков.
+2 = агент чтения журнала.
+3 = агент распространителя.
+4 = агент слияния.
+9 = агент чтения очереди.
+
+
+DECLARE @profileid AS int;
+EXEC sp_change_agent_parameter @profile_id = 9, 
+    @parameter_name = N'-MaxBcpThreads', @parameter_value = 2;
+    
+    
+EXEC sp_add_agent_parameter @profile_id = 1, @parameter_name = '-EncryptionLevel', @parameter_value = 0

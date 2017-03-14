@@ -1,0 +1,12 @@
+select [имя таблицы] = o.name, 
+       [имя пользователя] = user_name(o.uid),
+       [дата создания] = o.crdate
+from   sysobjects o
+where OBJECTPROPERTY(o.id, N'IsTable') = 1 
+      and
+      OBJECTPROPERTY(o.id, N'IsSystemTable')=0
+      and
+      OBJECTPROPERTY(o.id, N'IsMSShipped')!=1
+      and 
+      o.name not like N'#%'   
+order by [имя таблицы]

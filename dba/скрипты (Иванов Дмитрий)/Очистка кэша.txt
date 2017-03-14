@@ -1,0 +1,8 @@
+DBCC FREEPROCCACHE WITH NO_INFOMSGS;
+GO
+DBCC DROPCLEANBUFFERS WITH NO_INFOMSGS;
+GO
+--очистка кэша планов для конкретной БД
+
+select name, database_id from sys.databases
+DBCC FLUSHPROCINDB (<dbid>)

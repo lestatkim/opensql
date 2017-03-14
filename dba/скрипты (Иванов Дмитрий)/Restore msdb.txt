@@ -1,0 +1,6 @@
+Останавливаем службу sqlserver
+Переименовываем старые файлы msbd
+Запускаем sqlservr.exe  -c -T3608
+Открываем sqlcmd и делаем restore database msdb from disk='c:\temp\backup.bak' with recovery
+Закрываем запуск sqlservr.exe  -c -T3608
+Запускаем службу sqlserver

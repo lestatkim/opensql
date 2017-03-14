@@ -1,0 +1,11 @@
+-- ***** Восстанавливает БД в состоянии ожидания + перемещает физ. файлы *****
+-- ***** для отмены состояния ожидания закоминтить WITH NORECOVERY *****
+RESTORE DATABASE [SubscriptionService]
+    FROM DISK = '\\SRV-PRO-DC02\Backup\SRV-PRO-DB10\SQLDB\SubscriptionService_FULL_2010_07_20.bak' 
+    WITH NORECOVERY,
+    
+      MOVE 'SubscriptionService' TO 
+         'H:\SQL\Data\SubscriptionService.mdf', 
+      MOVE 'SubscriptionService_log' TO
+         'H:\SQL\Logs\SubscriptionService.ldf';
+GO

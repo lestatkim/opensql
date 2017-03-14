@@ -1,0 +1,8 @@
+-- Change database Parameterization to Forced
+ALTER DATABASE AdventureWorks
+SET PARAMETERIZATION FORCED
+GO
+-- Change database Parameterization to Simple
+ALTER DATABASE AdventureWorks
+SET PARAMETERIZATION Simple
+GO
