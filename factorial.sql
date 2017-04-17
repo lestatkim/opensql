@@ -2,18 +2,19 @@
 if object_id('dbo.factorial', 'FN') is not null
 	drop function dbo.factorial;
 go
-create function dbo.factorial(@n int)
+create function dbo.factorial(@n bigint)
 	
 /*	Описание: Функция вычисляет факториал
 	от заданного числа. 
 	Справка: факториал числа 5 это 1 * 2 * 3 * 4 * 5
 	Пример: select dbo.factorial(7)
+	Ограничение: максимальное заданное число = 20
 */
-returns int
+returns bigint
 as begin
 	declare 
-		@result int, 
-		@i int;
+		@result bigint, 
+		@i bigint;
 
 	select 
 		@i = 1,
