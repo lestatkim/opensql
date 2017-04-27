@@ -7,25 +7,25 @@ AS
 BEGIN
     -- /p
     DECLARE @if_tf NVARCHAR(512) = '
-        IF OBJECT_ID(' + @name + ', ' + @type + ') IS NULL
+        IF OBJECT_ID(''' + @name + ''', ''' + @type + ''') IS NULL
             EXEC(''CREATE FUNCTION ' + @name + '() RETURNS @t TABLE(i INT) BEGIN RETURN END'');
         GO
     ';
     DECLARE @fn NVARCHAR(512) = '
-        IF OBJECT_ID(' + @name + ', ' + @type + ') IS NULL
+        IF OBJECT_ID(''' + @name + ''', ''' + @type + ''') IS NULL
             EXEC(''CREATE FUNCTION ' + @name + '(@i INT) RETURNS INT AS BEGIN RETURN @i + 1 END'');
         GO
     ';
     DECLARE @p NVARCHAR(512) = '
-        IF OBJECT_ID(' + @name + ', ' + @type + ') IS NULL
+        IF OBJECT_ID(''' + @name + ''', ''' + @type + ''') IS NULL
             EXEC(''CREATE PROC ' + @name + 'AS BEGIN SELECT 1 END'');
         GO
     ';
     DECLARE @v NVARCHAR(512) = '
-        IF OBJECT_ID(' + @name + ', ' + @type + ') IS NULL
+        IF OBJECT_ID(''' + @name + ''', ''' + @type + ''') IS NULL
             EXEC(''CREATE VIEW ' + @name + ' AS SELECT 1 AS i'');
         GO
-    '
+    ';
 
     -- /l
     IF @type in ('IF', 'TF')
