@@ -56,15 +56,15 @@ WHERE City = N‘Санкт-Петербург’;
 Хорошо:
 ```
 DECLARE 
-    @item_weight int,
-    @company_name nvarchar(64);
+    @item_weight INT,
+    @company_name NVARCHAR(64);
 ```
 
 Не хорошо:
 ```
 DECLARE 
-    @IOW int,
-    @c nvarchar(64);
+    @IOW INT,
+    @c NVARCHAR(64);
 ```
  
 
@@ -72,19 +72,19 @@ DECLARE
 Хорошо:
 ```
     DECLARE
-        @item_weight int,
-        @company_name nvarchar(16);
+        @item_weight INT,
+        @company_name NVARCHAR(16);
 
     SELECT
         @item_weight = 10,
-        @company_name = ‘Microsoft’;
+        @company_name = N‘Microsoft’;
 ```
 
 Избегайте:
 ```
-	DECLARE @i int
-	DECLARE @j int
-	DECLARE @s nvarchar(25)
+	DECLARE @i INT
+	DECLARE @j INT
+	DECLARE @s NVARCHAR(25)
 
 	SET @i = 5
 	SET @j = 0
@@ -92,73 +92,81 @@ DECLARE
 ```
 
 
-Используйте нижнее_подчеркивание для именования составных пользовательских объектов или CamelStyle (от себя рекомендую использовать нижнее подчеркивание)
+## Используйте нижнее_подчеркивание для именования составных пользовательских объектов или CamelStyle
+Хорошо:
+```
+CREATE TABLE dbo.MyTable (
+    MyField INT
+);
 
---хорошо
-	CREATE TABLE dbo.MyTable (
-   		MyField int
-	);
+CREATE TABLE dbo.my_table
+(
+    my_field INT
+);
 
-	CREATE TABLE dbo.MyTable 
-	(
-   		MyField int
-	);
+CREATE PROC dbo.KC_MY_PROC 
+    @date_FROM DATE,
+    @date_to DATE
+...
+```
 
-	
-	CREATE PROC dbo.KC_MY_PROC 
-		@date_FROM date,
-		@date_to date
-	...
+Не хорошо:
+```
+CREATE TABLE [User Information];
 
+DECLARE strangevariableforsomething INT;
+```
 
-
---не хорошо
-	CREATE TABLE [User Information];
-
-	DECLARE strangevariableforsomething int;
-
-
-Используйте префиксы для именования объектов
-▪	P - User Stored Procedures
-▪	V – Views
-▪	FN - Scalar Valued Functions
-▪	TF - Table Valued Functions
-▪	FK - Foreign keys
-▪	DF - Default constraints
-▪	IX - Indexes
+## Используйте префиксы для именования объектов
+▪	P   - User Stored Procedures
+▪	V   – Views
+▪	FN  - Scalar Valued Functions
+▪	TF  - Table Valued Functions
+▪	FK  - Foreign keys
+▪	DF  - Default constraints
+▪	IX  - Indexes
+▪   TR  - Trigger
 
 
-(Рекомендуется) Используйте имена таблиц - в единственном числе
+## (Рекомендуется) Используйте имена таблиц - в единственном числе
 
---хорошо
-	CREATE TABLE dbo.Address;
+Хорошо:
+```
+CREATE TABLE dbo.Address;
+```   
  
---не хорошо	
-	CREATE TABLE dbo.Addresses;
+Избегайте:
+```
+CREATE TABLE dbo.Addresses;
+```
 
+## Наименование foreing key - используйте сначала имя родительской таблицы
 
-Наименование foreing key - используйте сначала имя родительской таблицы
-
---хорошо
-	fk_ParentTableName_ChildTableName
+Хорошо:
+```
+fk_ParentTableName_ChildTableName
+```
  
---не хорошо
-	fk_ChildTableName_ParentTableName
+Не хорошо:
+```
+fk_ChildTableName_ParentTableName
+```
 
 
 
-Используйте схему
-Всегда используйте схему при создании и использовании 
-пользовательских объектов
---хорошо
-	CREATE PROC dbo.NEW_ITEM_INSERT
+## Используйте схему
+>Всегда используйте схему при создании и использовании 
+>пользовательских объектов
+
+Хорошо:
+```
+CREATE PROC dbo.NEW_ITEM_INSERT;
+```
  
---не хорошо	
-	CREATE PROC LAST_ITEM_DELETE
-
-
-
-
+Не хорошо:
+```
+CREATE PROC LAST_ITEM_DELETE
+```
 
 
 Много / одно - строчные операторы
