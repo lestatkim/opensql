@@ -40,44 +40,44 @@ ____________________________________________________________
 
 Хорошо:
 ```
-    SELECT CustomerID, Street, City
-    FROM dbo.Address
-    WHERE City = N‘Санкт-Петербург’;
+SELECT CustomerID, Street, City
+FROM dbo.Address
+WHERE City = N‘Санкт-Петербург’;
 ```
 Не хорошо:
 ```
-    SELECT * 
-    FROM dbo.Address 
-    WHERE City = N‘Санкт-Петербург’;
+SELECT * 
+FROM dbo.Address 
+WHERE City = N‘Санкт-Петербург’;
 ```
 
 
 ## Используйте нативные названия переменных. Избегайте аббревиатур и односимвольных имен
 Хорошо:
 ```
-	DECLARE 
-		@item_weight int,
-		@company_name nvarchar(64);
+DECLARE 
+    @item_weight int,
+    @company_name nvarchar(64);
 ```
 
 Не хорошо:
 ```
-	DECLARE 
-		@IOW int,
-		@c nvarchar(64);
+DECLARE 
+    @IOW int,
+    @c nvarchar(64);
 ```
  
 
 ## Соблюдайте DRY (не повторяйтесь)
 Хорошо:
 ```
-	DECLARE
-		@item_weight int,
-		@company_name nvarchar(16);
+    DECLARE
+        @item_weight int,
+        @company_name nvarchar(16);
 
-	SELECT
-		@item_weight = 10,
-		@company_name = ‘Microsoft’;
+    SELECT
+        @item_weight = 10,
+        @company_name = ‘Microsoft’;
 ```
 
 Избегайте:
