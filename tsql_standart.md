@@ -422,7 +422,7 @@ JOIN dbo.Address ON U.AddressID = dbo.Address.AddressID
 Хорошо:
 ```
 SELECT u.surname, a.street
-FROM customer AS u
+FROM dbo.Customer AS u
     JOIN address AS a ON a.address_id = u.address_id
         AND a.field_1 = u.field_1;
 ```
@@ -430,7 +430,7 @@ FROM customer AS u
 Не хорошо:
 ```
 SELECT u.surname, a.street
-FROM customer AS u, address AS a
+FROM Customer AS u, address AS a
 WHERE U.AddressID = A.AddressID
 ```
 
@@ -452,19 +452,19 @@ WHERE U.AddressID = A.AddressID
 ```
 SELECT name,
     cast(id / 281474976710656 AS smallint) AS node_id
-FROM dbo.table;
+FROM dbo.Table;
 ```
  
 Не хорошо:
 ```
 SELECT name,
     dbo.fn_GetNodeIdFROMCompositeId(id) AS node_id	 
-FROM table;
+FROM Table;
 ```
 
 
 ## Проверка на наличие объекта
->Дело в том что если каждый раз делать DROP и CREATE, то удаляются права на объект, а еще объект может быть в репликации и при пересоздании, >из неё он удалится тоже. 
+>Дело в том что если каждый раз делать DROP и CREATE, то удаляются права на объект, а еще объект может быть в репликации и при пересоздании, из неё он удалится тоже. 
 
 Хорошо:
 ```
