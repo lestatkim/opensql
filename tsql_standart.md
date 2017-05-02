@@ -71,24 +71,24 @@ DECLARE
 ## Соблюдайте DRY (не повторяйтесь)
 Хорошо:
 ```
-    DECLARE
-        @item_weight INT,
-        @company_name NVARCHAR(16);
+DECLARE
+    @item_weight INT,
+    @company_name NVARCHAR(16);
 
-    SELECT
-        @item_weight = 10,
-        @company_name = N‘Microsoft’;
+SELECT
+    @item_weight = 10,
+    @company_name = N‘Microsoft’;
 ```
 
 Избегайте:
 ```
-	DECLARE @i INT
-	DECLARE @j INT
-	DECLARE @s NVARCHAR(25)
+DECLARE @i INT
+DECLARE @j INT
+DECLARE @s NVARCHAR(25)
 
-	SET @i = 5
-	SET @j = 0
-	SET @s = ‘Apple’
+SET @i = 5
+SET @j = 0
+SET @s = ‘Apple’
 ```
 
 
@@ -118,14 +118,14 @@ DECLARE strangevariableforsomething INT;
 ```
 
 ## Используйте префиксы для именования объектов
-▪	P   - User Stored Procedures
-▪	V   – Views
-▪	FN  - Scalar Valued Functions
-▪	TF  - Table Valued Functions
-▪	FK  - Foreign keys
-▪	DF  - Default constraints
-▪	IX  - Indexes
-▪   TR  - Trigger
+-	P   - User Stored Procedures
+-	V   – Views
+-	FN  - Scalar Valued Functions
+-	TF  - Table Valued Functions
+-	FK  - Foreign keys
+-	DF  - Default constraints
+-	IX  - Indexes
+-   TR  - Trigger
 
 
 ## (Рекомендуется) Используйте имена таблиц - в единственном числе
