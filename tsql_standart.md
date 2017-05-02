@@ -489,6 +489,8 @@ DROP FUNCTION dbo.MY_PROCEDURE
 GO
 ```
 
+https://habrahabr.ru/post/327566/
+
 
 ## Включайте в свои процедуры строку SET NOCOUNT ON;
 Хорошо:
