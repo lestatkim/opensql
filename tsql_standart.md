@@ -1,12 +1,15 @@
 # Стандарт оформленя T-SQL
 
 
+
+
+
 ## Завершайте каждый оператор в задании точкой с запятой
 
-> хорошо
+- [x] хорошо
 	**CREATE TABLE** dbo.UserInformation;
  
-> не хорошо
+- [ ] не хорошо
 	**CREATE TABLE** dbo.UserInformation
 
 
