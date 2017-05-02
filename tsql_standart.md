@@ -489,7 +489,7 @@ DROP FUNCTION dbo.MY_PROCEDURE
 GO
 ```
 
-https://habrahabr.ru/post/327566/
+[Статья на хабре по теме](https://habrahabr.ru/post/327566/)
 
 
 ## Включайте в свои процедуры строку SET NOCOUNT ON;
@@ -524,7 +524,7 @@ END CATCH;
 __________________________________________________________________
  *_Спасибо за внимание_*
 
-[Site](http://sqlcom.ru)
+[sqlcom](http://sqlcom.ru)
 
 [VK](http://vk.com/sqlcom)
 
