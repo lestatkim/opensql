@@ -179,14 +179,15 @@ FROM dbo.my_table;
 ```
 Хорошо, многострочный оператор:
 ```
-SELECT row_number() over (ORDER BY user_name) row_num,
+SELECT ROW_NUMBER() OVER (ORDER BY user_name) row_num,
     user_name, address
-FROM my_table_1 as t1
-    JOIN my_table_2 AS t2 ON t2.id = t1.id
-WHERE my_column > 1
-    AND user_id IN (
+FROM dbo.Table_1 AS t1
+    JOIN dbo.Table_2 AS t2 ON t2.id = t1.id
+        AND t2.Value > 100
+WHERE t1.String = N'ABC'
+    AND t1.user_id IN (
         SELECT user_id
-        FROM my_table_2
+        FROM dbo.Table_3
     );
 ```
 Не хорошо (лишний перевод строки):
