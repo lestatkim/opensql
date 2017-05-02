@@ -524,8 +524,8 @@ END CATCH;
 __________________________________________________________________
  *_Спасибо за внимание_*
 
-http://sqlcom.ru
+[Site](http://sqlcom.ru)
 
-http://vk.com/sqlcom
+[VK](http://vk.com/sqlcom)
 
-https://github.com/lestatkim/opensql
+[GitHub](https://github.com/lestatkim/opensql)
