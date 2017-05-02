@@ -520,4 +520,5 @@ END CATCH;
 ```
 
 _Спасибо за внимание_
+
 https://github.com/lestatkim/opensql
