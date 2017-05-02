@@ -513,9 +513,11 @@ GO
 BEGIN TRY
     --код
 END TRY
+
 BEGIN CATCH
     --код отлова ошибок
 END CATCH;
 ```
 
+_Спасибо за внимание_
 https://github.com/lestatkim/opensql
