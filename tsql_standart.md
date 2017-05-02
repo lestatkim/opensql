@@ -8,12 +8,12 @@ ____________________________________________________________
 
 Хорошо:
 ```
-    CREATE TABLE** dbo.UserInformation (ID INT);
+    CREATE TABLE dbo.UserInformation (ID INT);
     SET @i += 1;
 ```
 Не хорошо:
 ```
-	CREATE TABLE dbo.UserInformation  (ID INT)
+    CREATE TABLE dbo.UserInformation  (ID INT)
     SET @i = @i + 1
 ```
 
