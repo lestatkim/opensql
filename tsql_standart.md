@@ -220,7 +220,7 @@ WHERE value > 1;
 Хорошо:
 ```
 SELECT user_name, last_order_date
-FROM dbo.table_1
+FROM dbo.Table
 WHERE first_order_date > '20170101’ 
     AND last_order_date < ‘20170414’
     AND deleted = 0;
@@ -239,7 +239,7 @@ WHERE U.LastOrderDate > '2001-01-01' AND
 SELECT 
     U.Name, U.LastOrderDate
 FROM dbo.[User] AS U
-WHERE (U.LastOrderDate > '2001-01-01') AND (U.LastOrderDate 	< '2001-01-31'); -- лишние скобки
+WHERE (U.LastOrderDate > '2001-01-01') AND (U.LastOrderDate < '2001-01-31'); -- лишние скобки
 ```
 
 
@@ -280,15 +280,15 @@ WHILE 1 = 1 BEGIN (...) END
 
 Хорошо:
 ```
-SELECT row_number() over (ORDER BY c.id) row_num,
-    c.Name, sum(o.Amount) AS Amount
-FROM Customers AS c
-    JOIN Orders AS o ON c.id = o.id 
-        and o.date = c.date
+SELECT ROW_NUMBER() OBER (ORDER BY c.id) row_num,
+    c.Name, SUM(o.Amount) AS Amount
+FROM dbo.Customers AS c
+    JOIN dbo.Orders AS o ON c.id = o.id 
+        AND o.date = c.date
 WHERE c.Region = 'USA'
-    and c.GENDer = 'Female' 
+    AND c.Gender = 'Female' 
 GROUP BY c.Name
-HAVING sum(o.Amount) > 100
+HAVING SUM(o.Amount) > 100
 ORDER BY o.Amount DESC,
     c.Name ASC
 ```
@@ -327,8 +327,8 @@ IF 1 > 2
 BEGIN
     (...);
 END
-ELSE
-BEGIN
+
+ELSE BEGIN
     (...);
 END; -- IF 1 > 2
 ```
@@ -338,6 +338,7 @@ END; -- IF 1 > 2
 IF 1 > 2 BEGIN
     (...);
 END
+
 ELSE BEGIN
     (...);
 END; --правильно 
@@ -357,7 +358,7 @@ ELSE
 
 Хорошо:
 ```
-CREATE PROC dbo.MY_PROCEDURE @param type
+CREATE PROC dbo.MY_PROCEDURE @param INT
 AS
 BEGIN
     (...);
@@ -365,7 +366,7 @@ END;
 ```
 Не хорошо:
 ```
-CREATE PROCEDURE dbo.uspMyProcedure @param type
+CREATE PROCEDURE dbo.uspMyProcedure @param INT
 AS
     (...)
 ```
@@ -376,13 +377,13 @@ AS
 
 Хорошо:
 ```
-SET  @i += 1;
+SET @i += 1;
 ```
 
 Хорошо:
 ```
 SELECT @start_date = min(start_date) 
-FROM table
+FROM dbo.Table
 WHERE deleted = 0;
 ```
 
@@ -394,7 +395,7 @@ SET  @i=1;
 Не хорошо:
 ```
 SELECT @start_date=min(start_date) 
-FROM table 
+FROM dbo.Table 
 WHERE deleted=0 AND StartDate>'2010-01-01';
 ```
 
