@@ -169,308 +169,353 @@ CREATE PROC LAST_ITEM_DELETE
 ```
 
 
-Много / одно - строчные операторы
-Правильно организуйте операторы
---хорошо, однострочный оператор
-	SELECT UserName, Address 
-	FROM dbo.my_table;
+## Много / одно - строчные операторы
+>Правильно организуйте операторы
+Хорошо, однострочный оператор:
+```
+SELECT UserName, Address 
+FROM dbo.my_table;
+```
+Хорошо, многострочный оператор:
+```
+SELECT row_number() over (ORDER BY user_name) row_num,
+    user_name, address
+FROM my_table_1 as t1
+    JOIN my_table_2 AS t2 ON t2.id = t1.id
+WHERE my_column > 1
+    AND user_id IN (
+        SELECT user_id
+        FROM my_table_2
+    );
+```
+Не хорошо (лишний перевод строки):
+```
+SELECT 
+    UserName 
+FROM 
+    my_table_1
+WHERE 
+    MyField > 1; 
+```
  
-
-
-
-
-
---хорошо, многострочный оператор
-	SELECT row_number() over (ORDER BY user_name) row_num,
-		user_name, address
-	FROM my_table_1 as t1
-		JOIN my_table_2 AS t2 ON t2.id = t1.id
-	WHERE my_column > 1
-		AND user_id IN (
-			SELECT user_id
-	     	FROM my_table_2
-		); 
+Не хорошо (условие and должно стоять в начале условия):
+```
+SELECT user_name, address
+FROM my_table_1
+WHERE id > 1 AND
+    value < 3;
+```
  
---не хорошо (лишний перевод строки)
-	SELECT 
-	   UserName 
-	FROM 
-	   my_table_1
-	WHERE 
-	   MyField > 1; 
+Избегайте смешивания подходов (отсутствует перевод строки перед FROM):
+```
+SELECT user_name, address FROM my_table 
+WHERE value > 1;
+```
+
+
+## Сложные условия
+>При определении сложных условий, описывайте каждое условие на новой строке. При этом каждая строка должна начинаться с оператора AND | OR. >Исключением может быть случай, когда два или более условия накладываются на один и тот же столбец - в этом случае их можно разместить на >одной строке. 
+>Делайте отступы, соответствующие уровню вложенности условий. Обозначайте скобками группы условий только там, где это необходимо - объединяя группы из условий ИЛИ условием И.
+
+Хорошо:
+```
+SELECT user_name, last_order_date
+FROM dbo.table_1
+WHERE first_order_date > '20170101’ 
+    AND last_order_date < ‘20170414’
+    AND deleted = 0;
+```
+Не хорошо:
+```
+SELECT 
+    U.Name, U.LastOrderDate
+FROM dbo.[User] AS U
+WHERE U.LastOrderDate > '2001-01-01' AND
+    U.LastOrderDate < '2001-01-31' AND U.deleted = 0;
+```
  
---не хорошо (условие and должно стоять в начале условия)	
-	SELECT user_name, address
-	FROM my_table_1
-	WHERE id > 1 AND
-   		value < 3;
+Не хорошо:
+```
+SELECT 
+    U.Name, U.LastOrderDate
+FROM dbo.[User] AS U
+WHERE (U.LastOrderDate > '2001-01-01') AND (U.LastOrderDate 	< '2001-01-31'); -- лишние скобки
+```
+
+
+## Отступы, область видимости
+>При создании области видимости всегда делайте отступ. 
+>(Рекомендация от себя: при сложных конструкциях, оставляйте комментарии в конце каждой конструкции)
+Хорошо:
+```
+WHILE 1 = 1 BEGIN
+    (...);
+END; -- WHILE 1 = 1
+```
+
+Хорошо:
+```
+WHILE 1 = 1 
+BEGIN
+    (...);
+END;
+```
+
+Не хорошо:
+```
+WHILE 1 = 1 
+    BEGIN (...) END
+```
+
+Не хорошо:
+```
+WHILE 1 = 1 BEGIN (...) END
+```
+
+
+## Отступы внутри многострочных запросов
+>Перечесление полей в секции SELECT должно быть оформлено единичным оступом по отношению к оператору SELECT. Слова FROM, WHERE, HAVING, GROUP >BY, ORDER BY должны находиться на одном уровне с SELECT. При переносе оператора  JOIN, каждый такой оператор должен иметь единичный >дополнительный отступ по отношению к FROM. При соединении таблиц по нескольким полям, оператор 
+>AND должен иметь единичный дополнительный отступ по отношению к 
+>LEFT JOIN / JOIN / CROSS APPLY и так далее.
+
+Хорошо:
+```
+SELECT row_number() over (ORDER BY c.id) row_num,
+    c.Name, sum(o.Amount) AS Amount
+FROM Customers AS c
+    JOIN Orders AS o ON c.id = o.id 
+        and o.date = c.date
+WHERE c.Region = 'USA'
+    and c.GENDer = 'Female' 
+GROUP BY c.Name
+HAVING sum(o.Amount) > 100
+ORDER BY o.Amount DESC,
+    c.Name ASC
+```
+
+## Скобки
+>В случае, когда вы используете скобки вокруг многострочных выражений, пользуйтесь одним из ниже приведенных способов
+
+Хорошо (подобная конструкция так же используется в с#):
+```
+RETURN
+(
+    (...)
+);
+```
+
+Хорошо (личная рекомендация. Избавляет от лишнего перевода строки):
+```
+RETURN (
+    (...)
+);
+```
  
---избегайте смешивания подходов (отсутствует перевод строки перед FROM)
-	SELECT user_name, address FROM my_table 
-	WHERE value > 1;
+Не хорошо:
+```
+RETURN (
+(...) )
+```
 
 
-Сложные условия
-При определении сложных условий, описывайте каждое условие на новой строке. При этом каждая строка должна начинаться с оператора and | or. Исключением может быть случай, когда два или более условия накладываются на один и тот же столбец - в этом случае их можно разместить на одной строке. Делайте отступы, соответствующие уровню вложенности условий. Обозначайте скобками группы условий только там, где это необходимо - объединяя группы из условий ИЛИ условием И.
+## Область видимости и условные операторы
+>При использовании оператора IF всегда определяйте область видимости 
+>(Рекомендация оставляйте комментарии в конце конструкции)
+Хорошо:
+```
+IF 1 > 2
+BEGIN
+    (...);
+END
+ELSE
+BEGIN
+    (...);
+END; -- IF 1 > 2
+```
 
---хорошо
-	SELECT user_name, last_order_date
-	FROM table_1
-	WHERE first_order_date > '20170101’ 
-		AND last_order_date < ‘20170414’
-		AND deleted = 0;
-
---не хорошо
-	SELECT 
-	   U.Name, U.LastOrderDate
-	FROM dbo.[User] AS U
-	WHERE U.LastOrderDate > '2001-01-01' AND
-	   U.LastOrderDate < '2001-01-31' AND U.deleted = 0;
- 
---не хорошо
-	SELECT 
-	   U.Name, U.LastOrderDate
-	FROM dbo.[User] AS U
-	WHERE (U.LastOrderDate > '2001-01-01') AND (U.LastOrderDate 	< '2001-01-31'); -- лишние скобки
-
-
-Отступы, область видимости
-При создании области видимости всегда делайте отступ. 
-(Рекомендация от себя: при сложных конструкциях, оставляйте комментарии в конце каждой конструкции)
--- хорошо
-	WHILE 1 = 1 BEGIN
-		(...);
-	END; -- WHILE 1 = 1
-
--- хорошо
-	WHILE 1 = 1 
-	BEGIN
-		(...);
-	END;
-
---не хорошо
-	WHILE 1 = 1 
-		BEGIN (...) END
-
---не хорошо
-	WHILE 1 = 1 BEGIN (...) END
-
-
-Отступы внутри многострочных запросов
-Перечесление полей в секции SELECT должно быть оформлено единичным оступом по отношению к оператору SELECT. Слова FROM, WHERE, HAVING, GROUP BY, ORDER BY должны находиться на одном уровне с SELECT. При переносе оператора  JOIN, каждый такой оператор должен иметь единичный дополнительный отступ по отношению к FROM. При соединении таблиц по нескольким полям, оператор 
-AND должен иметь единичный дополнительный отступ по отношению к 
-left JOIN / JOIN / cross apply и так далее.
-
---хорошо
-	SELECT row_number() over (ORDER BY c.id) row_num,
-	   c.Name, sum(o.Amount) AS Amount
-	FROM Customers AS c
-		JOIN Orders AS o ON c.id = o.id 
-	   		and o.date = c.date
-	WHERE c.Region = 'USA'
-	   and c.GENDer = 'Female' 
-	GROUP BY c.Name
-	HAVING sum(o.Amount) > 100
-	ORDER BY o.Amount DESC,
-	   c.Name ASC
-
-Скобки
-В случае, когда вы используете скобки вокруг многострочных выражений, пользуйтесь одним из ниже приведенных способов
---хорошо (подобная конструкция так же используется в с#)
-	RETURN
-	(
-	  (...)
-	);
-
--- хорошо (личная рекомендация. Избавляет от лишнего перевода строки)
-	RETURN (
-	  (...)
-	);
- 
---не хорошо	
-	RETURN (
-	(...) )
-
-
-Область видимости и условные операторы
-При использовании оператора IFвсегда определяйте область видимости (Рекомендация оставляйте комментарии в конце конструкции)
--- хорошо
-	IF 1 > 2
-	BEGIN
-	   (...);
-	END
-	ELSE
-	BEGIN
-	   (...);
-	END; -- IF 1 > 2
-
--- хорошо
-	IF 1 > 2 BEGIN
-	   (...);
-	END
-	ELSE BEGIN
-	   (...);
-	END; --правильно 
+Хорошо:
+```
+IF 1 > 2 BEGIN
+    (...);
+END
+ELSE BEGIN
+    (...);
+END; --правильно 
+```
 
  
---не хорошо	
-	IF 1 > 2
-	   (...)
-	ELSE
-	   (...)
+Не хорошо:
+```
+IF 1 > 2
+    (...)
+ELSE
+    (...)
+```
+
+## Область видимости внутри процедур
+>Всегда определяйте область видимости при создании процедур и функций содержащих более одного оператора
+
+Хорошо:
+```
+CREATE PROC dbo.MY_PROCEDURE @param type
+AS
+BEGIN
+    (...);
+END;
+```
+Не хорошо:
+```
+CREATE PROCEDURE dbo.uspMyProcedure @param type
+AS
+    (...)
+```
 
 
-Область видимости внутри процедур
-Всегда определяйте область видимости при создании процедур и функций содержащих более одного оператора
---хорошо
-	CREATE PROC dbo.MY_PROCEDURE @param type
-	AS
-	BEGIN
-	   (...);
-	END;
+## Пробелы вокруг операторов
+>Всегда окружайте пробелами операторы в выражениях (равно, не равно, плюс, минус, меньше, больше, умножение, деление и др)
+
+Хорошо:
+```
+SET  @i += 1;
+```
+
+Хорошо:
+```
+SELECT @start_date = min(start_date) 
+FROM table
+WHERE deleted = 0;
+```
+
+Не хорошо:
+```
+SET  @i=1;	
+```
+
+Не хорошо:
+```
+SELECT @start_date=min(start_date) 
+FROM table 
+WHERE deleted=0 AND StartDate>'2010-01-01';
+```
+
+
+## Алиасы и джойны
+>При выполнении джойнов всегда идентифицируйте все столбцы при помощи алиасов. Ключевое слово AS можно опустить.
+Хорошо:
+```
+SELECT u.surname, a.street
+FROM customer AS u
+    JOIN address AS a ON u.address_id = a.address_id;
+```
  
---не хорошо	
-	CREATE PROCEDURE dbo.uspMyProcedure @param type
-	AS
-	   (...)
+Не хорошо:
+```
+SELECT U.Surname, Street
+FROM Users U
+JOIN dbo.Address ON U.AddressID = dbo.Address.AddressID
+```
 
 
-Пробелы вокруг операторов
-Всегда окружайте пробелами операторы в выражениях (равно, не равно, плюс, минус, меньше, больше, умножение, деление и др)
+## Для джойнов используйте стиль ANSI
+>Избегайте джойнов, используя секцию WHERE. Вместо этого используйте стиль ANSI. Ключ, на который ссылается JOIN должен стоять в конце.
 
---правильно
-	SET  @i += 1;
-
---правильно
-	SELECT @start_date = min(start_date) 
-	FROM table
-	WHERE deleted = 0;
-
---не хорошо
-	 SET  @i=1;	
-
---не хорошо	
-	SELECT @start_date=min(start_date) 
-	FROM table 
-	WHERE deleted=0 AND StartDate>'2010-01-01' ;
-
-
-Алиасы и джойны
-При выполнении джойнов всегда идентифицируйте все столбцы при помощи алиасов. Ключевое слово AS можно опустить.
---правильно
-	SELECT u.surname, a.street
-	FROM customer AS u
-		JOIN address AS a ON u.address_id = a.address_id
+Хорошо:
+```
+SELECT u.surname, a.street
+FROM customer AS u
+    JOIN address AS a ON a.address_id = u.address_id
+        AND a.field_1 = u.field_1;
+```
  
---не хорошо	
-	SELECT U.Surname, Street
-	FROM Users U
-	JOIN dbo.Address ON U.AddressID = dbo.Address.AddressID
+Не хорошо:
+```
+SELECT u.surname, a.street
+FROM customer AS u, address AS a
+WHERE U.AddressID = A.AddressID
+```
 
 
-Для джойнов используйте стиль ANSI
-Избегайте джойнов, используя секцию WHERE. Вместо этого используйте стиль ANSI. Ключ, на который ссылается JOIN должен стоять в конце.
+## Используйте LEFT JOIN
+>Избегайте использования RIGHT JOIN - перепишите запрос 
+>на использование LEFT JOIN.
 
---хорошо
-	SELECT u.surname, a.street
-	FROM customer AS u
-		JOIN address AS a ON a.address_id = u.address_id
-			and a.field_1 = u.field_1
+
+## Хинты
+>Используя хинты, разделяйте их запятыми.
+
+
+## Не используйте скалярные функции в запросах
+>Использование скалярных функций в запросах считается дурным тоном и этого стоит избегать по возможности 
+>(исключение – генерация композитного идентификатора функцией dbo.fn_getIdEx)
+
+Хорошо:
+```
+SELECT name,
+    cast(id / 281474976710656 AS smallint) AS node_id
+FROM dbo.table;
+```
  
---не хорошо	
-	SELECT u.surname, a.street
-	FROM customer AS u, address AS a
-	WHERE U.AddressID = A.AddressID
+Не хорошо:
+```
+SELECT name,
+    dbo.fn_GetNodeIdFROMCompositeId(id) AS node_id	 
+FROM table;
+```
 
 
-Используйте LEFT JOIN
-Избегайте использования right JOIN - перепишите запрос 
-на использование left JOIN.
+## Проверка на наличие объекта
+
+Хорошо:
+```
+IF OBJECT_ID('dbo.Function, 'IF') IS NULL
+    EXEC('CREATE FUNCTION dbo.Function() RETURNS @t TABLE(i INT) BEGIN RETURN END');
+GO
+ALTER FUNCTION() ..
+```
+
+Хорошо:
+```
+IF OBJECT_ID('dbo.Procedure') IS NULL
+    EXEC('CREATE PROC dbo.Procedure AS');
+GO
+ALTER PROC dbo.Procedure ..
+```
+
+Не хорошо:
+```
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = 	OBJECT_ID(N'dbo.’MY_PROCEDURE’)
+    AND type in (N'FN', N'IF', N'TF', N'FS', N'FT'))
+DROP FUNCTION dbo.MY_PROCEDURE
+GO
+```
 
 
-Хинты
-Используя хинты, разделяйте их запятыми.
+## Включайте в свои процедуры строку SET NOCOUNT ON;
+Хорошо:
+```
+CREATE PROC dbo.Procedure @i INT
+AS 
+BEGIN
+SET NOCOUNT ON;
+    
+    SELECT Field
+    FROM dbo.Table
+    WHERE id = @i;
 
+SET NOCOUNT OFF;
+END
+GO
+```
 
-Не используйте скалярные функции в запросах
-Использование скалярных функций в запросах считается дурным тоном и этого стоит избегать по возможности (исключение – генерация композитного идентификатора функцией dbo.fn_getIdEx)
-
---хорошо	
-	SELECT name,
-		cast(id / 281474976710656 AS smallint) AS node_id
-	FROM table;
- 
---не хорошо
-	SELECT name,
-		dbo.fn_GetNodeIdFROMCompositeId(id) AS node_id	 
-	FROM table;
-
-
-
-
-
-
-
-Проверка на наличие объекта
-
---хорошо
-	IF object_id('dbo.MY_FUNC, 'IF') is not null 
-	    DROP FUNCTION dbo.MY_FUNC;
-	go
-
---хорошо (proc и procedure – это синонимы, при использовании PROC, названия процедуры встают на один ряд)
-	IF object_id('dbo.LAST_ITEM_DELETE, 'P') is not null 
-	    DROP PROC dbo.LAST_ITEM_DELETE;
-	go
-
-FN = скалярная функция
-TF = возвращающая табличное значение функция
-P = хранимая процедура
-TR = триггер
-U = таблица
-
---не хорошо
-	IF EXISTS (SELECT * FROM sys.objects WHERE object_id = 	OBJECT_ID(N'dbo.’MY_PROCEDURE’)
-	    AND type in (N'FN', N'IF', N'TF', N'FS', N'FT'))
-	DROP FUNCTION dbo.MY_PROCEDURE
-	GO
-
-
-Включайте в свои процедуры строку SET NOCOUNT ON;
---хорошо	
-	CREATE PROC dbo.MY_PROC
-	AS BEGIN
-		SET NOCOUNT ON;
-		
-		SELECT column_1
-		FROM table;
-
-		SET NOCOUNT OFF;
-	END;
-
-	
-Используйте IFexists (SELECT 1) вместо IFexists (SELECT *)
---хорошо
-	IF EXISTS (SELECT 1 FROM table)
-		...
-
---не хорошо
-	IF EXISTS (SELECT * FROM table)
-		...
-
-
-
-
-
-
-Используйте TRY – CATCH для отлова ошибок
---хорошо
-	BEGIN try
-		--код
-	END try
-	BEGIN catch
-		--код отлова ошибок
-	END catch;
+## Используйте TRY – CATCH для отлова ошибок
+Хорошо:
+```
+BEGIN TRY
+    --код
+END TRY
+BEGIN CATCH
+    --код отлова ошибок
+END CATCH;
+```
 
 https://github.com/lestatkim/opensql
-
