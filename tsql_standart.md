@@ -8,11 +8,14 @@ ____________________________________________________________
 
 - [x] хорошо
 
-	**CREATE TABLE** dbo.UserInformation;
+	**CREATE TABLE** dbo.UserInformation (ID **INT**);
+    **SET** @i += 1;
  
 - [ ] не хорошо
 
-	**CREATE TABLE** dbo.UserInformation
+	**CREATE TABLE** dbo.UserInformation  (ID **INT**)
+    **SET** @i = @i + 1
+
 
 
 ## Комментарии
@@ -22,13 +25,15 @@ ____________________________________________________________
 
 ## Используйте шапку для процедур / триггеров / функций
 
-> пример
+пример
+'''
 	/*	Author: Name Surname
 		Create date: 01.01.2017
 		Description: Процедура собирает статистику по всем грузоотправлениям
 			За указанный период
 		Example: exec KC_FORWARD_STATISCTIC @FROM_date, @to_date
 	*/
+'''
 
 
 ## Не используйте * в запросах. Указывайте названия столбцов явно
