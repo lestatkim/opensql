@@ -25,14 +25,16 @@ ____________________________________________________________
 
 ## Используйте шапку для процедур / триггеров / функций
 
-*_пример_*
+Пример:
+'''
 
->	/*	Author: Name Surname
->		Create date: 01.01.2017
->		Description: Процедура собирает статистику по всем грузоотправлениям
->			За указанный период
->		Example: exec KC_FORWARD_STATISCTIC @FROM_date, @to_date
->	*/
+/*	Author: Name Surname
+	Create date: 01.01.2017
+	Description: Процедура собирает статистику по всем грузоотправлениям
+		За указанный период
+	Example: exec KC_FORWARD_STATISCTIC @FROM_date, @to_date
+	*/
+'''
 
 
 
