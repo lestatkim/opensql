@@ -404,14 +404,14 @@ WHERE deleted=0 AND StartDate>'2010-01-01';
 Хорошо:
 ```
 SELECT u.surname, a.street
-FROM customer AS u
+FROM dbo.Customer AS u
     JOIN address AS a ON u.address_id = a.address_id;
 ```
  
 Не хорошо:
 ```
 SELECT U.Surname, Street
-FROM Users U
+FROM dbo.Users U
 JOIN dbo.Address ON U.AddressID = dbo.Address.AddressID
 ```
 
