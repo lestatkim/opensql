@@ -7,18 +7,15 @@ ____________________________________________________________
 |Object|Code|Notation|Length|Plural|Prefix|Suffix|Abbreviation|Char|Mask|Example|
 |------|----|--------|------|------|------|------|------------|----|----|-------|
 |Database|UPPERCASE|30|No|No|No|Yes|[A-z]|MYDATABASE|
-
-
-|Database Trigger		PascalCase	50	No	DTR_	No	Yes	[A-z]	DTR_CheckLogin
-|Schema		lowercase	30	No	No	No	Yes	[A-z][0-9]	myschema
-|File Table		PascalCase	128	No	FT_	No	Yes	[A-z][0-9]	FT_MyTable
-|Global Temporary Table		PascalCase	118	No	No	No	Yes	##[A-z][0-9]	##MyTable
-|Local Temporary Table		PascalCase	118	No	No	No	Yes	#[A-z][0-9]	#MyTable
-|Table	U	PascalCase	30	No	No	No	Yes	[A-z][0-9]	MyTable
-|Table Column		PascalCase	30	No	No	No	Yes	[A-z][0-9]	MyColumn
-|Table Default Values	D	PascalCase	128	No	DF_	No	Yes	[A-z][0-9]	DF_MyTable_MyColumn
-|Table Check Column Constraint	C	PascalCase	128	No	CK_	No	Yes	[A-z][0-9]	CK_MyTable_MyColumn
-
+|Database Trigger|PascalCase|50|No|DTR_|No|Yes|[A-z]|DTR_CheckLogin|
+|Schema|lowercase|30|No|No|No|Yes|[A-z][0-9]|myschema|
+|File Table	|PascalCase|128|No|FT_|No|Yes|[A-z][0-9]|FT_MyTable|
+|Global Temporary Table|PascalCase|118|No|No|No|Yes|##[A-z][0-9]|##MyTable|
+|Local Temporary Table|PascalCase|118|No|No|No|Yes|#[A-z][0-9]|#MyTable|
+|Table|U|PascalCase|30|No|No|No|Yes|[A-z][0-9]|MyTable|
+|Table Column|PascalCase|30|No|No|No|Yes|[A-z][0-9]|MyColumn|
+|Table Default Values|D|PascalCase|128|No|DF_|No|Yes|[A-z][0-9]|DF_MyTable_MyColumn|
+|Table Check Column Constraint|C|PascalCase|128|No|CK_|No|Yes|[A-z][0-9]|CK_MyTable_MyColumn|
 
 
 ## Завершайте каждый оператор в задании точкой с запятой
