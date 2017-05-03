@@ -1,5 +1,5 @@
 # Стандарт оформления T-SQL
-###### версия 1.0.2
+###### версия 1.0.2.1
 
 ____________________________________________________________
 
@@ -28,7 +28,7 @@ SET @i += 1;
 ```
 Не хорошо:
 ```sql
-CREATE TABLE dbo.UserInformation  (ID INT)
+CREATE TABLE dbo.UserInformation (ID INT)
 SET @i = @i + 1
 ```
 
