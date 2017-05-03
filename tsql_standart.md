@@ -6,14 +6,14 @@ ____________________________________________________________
 
 |Объект|Длина|Префикс|Допустимые символы|Пример|
 |------|-----|-------|------------------|------|
-|Database|30|Нет|[A-z]|MYDATABASE|
+|Database|30| |[A-z]|MYDATABASE|
 |Database Trigger|50|DTR_|[A-z]|DTR_CheckLogin|
-|Schema|30|Нет|[A-z][0-9]|myschema|
+|Schema|30| |[A-z][0-9]|myschema|
 |File Table|128|FT_|[A-z][0-9]|FT_MyTable|
-|Global Temporary Table|128|Нет|##[A-z][0-9]|##MyTable|
-|Local Temporary Table|128|Нет|#[A-z][0-9]|#MyTable|
-|Table|30|Нет|[A-z][0-9]|MyTable|
-|Table Column|30|Нет|[A-z][0-9]|MyColumn|
+|Global Temporary Table|128| |##[A-z][0-9]|##MyTable|
+|Local Temporary Table|128| |#[A-z][0-9]|#MyTable|
+|Table|30| |[A-z][0-9]|MyTable|
+|Table Column|30| |[A-z][0-9]|MyColumn|
 |Table Default Values|128|DF_|[A-z][0-9]|DF_MyTable_MyColumn|
 |Table Check Column Constraint|128|CK_|[A-z][0-9]|CK_MyTable_MyColumne|
 
