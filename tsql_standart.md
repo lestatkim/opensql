@@ -1,5 +1,5 @@
 # Стандарт оформления T-SQL
-###### версия 1.0
+###### версия 1.0.2
 
 ____________________________________________________________
 
@@ -486,7 +486,7 @@ FROM Table;
 
 Хорошо:
 ```sql
-IF OBJECT_ID('dbo.Function, 'IF') IS NULL
+IF OBJECT_ID('dbo.Function', 'IF') IS NULL
     EXEC('CREATE FUNCTION dbo.Function() RETURNS @t TABLE(i INT) BEGIN RETURN END');
 GO
 ALTER FUNCTION() ..
@@ -494,7 +494,7 @@ ALTER FUNCTION() ..
 
 Хорошо:
 ```sql
-IF OBJECT_ID('dbo.Procedure') IS NULL
+IF OBJECT_ID('dbo.Procedure', 'P') IS NULL
     EXEC('CREATE PROC dbo.Procedure AS');
 GO
 ALTER PROC dbo.Procedure ..
