@@ -4,18 +4,18 @@ ____________________________________________________________
 
 ## Имена объектов
 
-|Object|Code|Notation|Length|Plural|Prefix|Suffix|Abbreviation|Char|Mask|Example|
-|------|----|--------|------|------|------|------|------------|----|----|-------|
-|Database|UPPERCASE|30|No|No|No|Yes|[A-z]|MYDATABASE|
-|Database Trigger|PascalCase|50|No|DTR_|No|Yes|[A-z]|DTR_CheckLogin|
-|Schema|lowercase|30|No|No|No|Yes|[A-z][0-9]|myschema|
-|File Table	|PascalCase|128|No|FT_|No|Yes|[A-z][0-9]|FT_MyTable|
-|Global Temporary Table|PascalCase|118|No|No|No|Yes|##[A-z][0-9]|##MyTable|
-|Local Temporary Table|PascalCase|118|No|No|No|Yes|#[A-z][0-9]|#MyTable|
-|Table|U|PascalCase|30|No|No|No|Yes|[A-z][0-9]|MyTable|
-|Table Column|PascalCase|30|No|No|No|Yes|[A-z][0-9]|MyColumn|
-|Table Default Values|D|PascalCase|128|No|DF_|No|Yes|[A-z][0-9]|DF_MyTable_MyColumn|
-|Table Check Column Constraint|C|PascalCase|128|No|CK_|No|Yes|[A-z][0-9]|CK_MyTable_MyColumn|
+|Объект|Длина|Префикс|Допустимые символы|Пример|
+|------|-----|-------|------------------|------|
+|Database|30|Нет|[A-z]|MYDATABASE|
+|Database Trigger|50|DTR_|[A-z]|DTR_CheckLogin|
+|Schema|30|Нет|[A-z][0-9]|myschema|
+|File Table|128|FT_|[A-z][0-9]|FT_MyTable|
+|Global Temporary Table|128|Нет|##[A-z][0-9]|##MyTable|
+|Local Temporary Table|128|Нет|#[A-z][0-9]|#MyTable|
+|Table|30|Нет|[A-z][0-9]|MyTable|
+|Table Column|30|Нет|[A-z][0-9]|MyColumn|
+|Table Default Values|128|DF_|[A-z][0-9]|DF_MyTable_MyColumn|
+|Table Check Column Constraint|128|CK_|[A-z][0-9]|CK_MyTable_MyColumne|
 
 
 ## Завершайте каждый оператор в задании точкой с запятой
