@@ -2,17 +2,34 @@
 
 ____________________________________________________________
 
+## Имена объектов
+
+|Object|Code|Notation|Length|Plural|Prefix|Suffix|Abbreviation|Char|Mask|Example|
+|------|----|--------|------|------|------|------|------------|----|----|-------|
+|Database|UPPERCASE|30|No|No|No|Yes|[A-z]|MYDATABASE|
+
+
+|Database Trigger		PascalCase	50	No	DTR_	No	Yes	[A-z]	DTR_CheckLogin
+|Schema		lowercase	30	No	No	No	Yes	[A-z][0-9]	myschema
+|File Table		PascalCase	128	No	FT_	No	Yes	[A-z][0-9]	FT_MyTable
+|Global Temporary Table		PascalCase	118	No	No	No	Yes	##[A-z][0-9]	##MyTable
+|Local Temporary Table		PascalCase	118	No	No	No	Yes	#[A-z][0-9]	#MyTable
+|Table	U	PascalCase	30	No	No	No	Yes	[A-z][0-9]	MyTable
+|Table Column		PascalCase	30	No	No	No	Yes	[A-z][0-9]	MyColumn
+|Table Default Values	D	PascalCase	128	No	DF_	No	Yes	[A-z][0-9]	DF_MyTable_MyColumn
+|Table Check Column Constraint	C	PascalCase	128	No	CK_	No	Yes	[A-z][0-9]	CK_MyTable_MyColumn
+
 
 
 ## Завершайте каждый оператор в задании точкой с запятой
 
 Хорошо:
-```
+```sql
     CREATE TABLE dbo.UserInformation (ID INT);
     SET @i += 1;
 ```
 Не хорошо:
-```
+```sql
     CREATE TABLE dbo.UserInformation  (ID INT)
     SET @i = @i + 1
 ```
@@ -26,7 +43,7 @@ ____________________________________________________________
 ## Используйте шапку для процедур / триггеров / функций
 
 Пример:
-```
+```sql
 /*	Author: Name Surname
 	Create date: 01.01.2017
 	Description: Процедура собирает статистику по всем грузоотправлениям
@@ -39,13 +56,13 @@ ____________________________________________________________
 ## Не используйте * в запросах. Указывайте названия столбцов явно
 
 Хорошо:
-```
+```sql
 SELECT CustomerID, Street, City
 FROM dbo.Address
 WHERE City = N‘Санкт-Петербург’;
 ```
 Не хорошо:
-```
+```sql
 SELECT * 
 FROM dbo.Address 
 WHERE City = N‘Санкт-Петербург’;
@@ -54,14 +71,14 @@ WHERE City = N‘Санкт-Петербург’;
 
 ## Используйте нативные названия переменных. Избегайте аббревиатур и односимвольных имен
 Хорошо:
-```
+```sql
 DECLARE 
     @item_weight INT,
     @company_name NVARCHAR(64);
 ```
 
 Не хорошо:
-```
+```sql
 DECLARE 
     @IOW INT,
     @c NVARCHAR(64);
@@ -70,7 +87,7 @@ DECLARE
 
 ## Соблюдайте DRY (не повторяйтесь)
 Хорошо:
-```
+```sql
 DECLARE
     @item_weight INT,
     @company_name NVARCHAR(16);
@@ -81,7 +98,7 @@ SELECT
 ```
 
 Избегайте:
-```
+```sql
 DECLARE @i INT
 DECLARE @j INT
 DECLARE @s NVARCHAR(25)
@@ -94,7 +111,7 @@ SET @s = ‘Apple’
 
 ## Используйте нижнее_подчеркивание для именования составных пользовательских объектов или CamelStyle
 Хорошо:
-```
+```sql
 CREATE TABLE dbo.MyTable (
     MyField INT
 );
@@ -111,7 +128,7 @@ CREATE PROC dbo.KC_MY_PROC
 ```
 
 Не хорошо:
-```
+```sql
 CREATE TABLE [User Information];
 
 DECLARE strangevariableforsomething INT;
@@ -131,24 +148,24 @@ DECLARE strangevariableforsomething INT;
 ## (Рекомендуется) Используйте имена таблиц - в единственном числе
 
 Хорошо:
-```
+```sql
 CREATE TABLE dbo.Address;
 ```   
  
 Избегайте:
-```
+```sql
 CREATE TABLE dbo.Addresses;
 ```
 
 ## Наименование foreing key - используйте сначала имя родительской таблицы
 
 Хорошо:
-```
+```sql
 fk_ParentTableName_ChildTableName
 ```
  
 Не хорошо:
-```
+```sql
 fk_ChildTableName_ParentTableName
 ```
 
@@ -159,12 +176,12 @@ fk_ChildTableName_ParentTableName
 >пользовательских объектов
 
 Хорошо:
-```
+```sql
 CREATE PROC dbo.NEW_ITEM_INSERT;
 ```
  
 Не хорошо:
-```
+```sql
 CREATE PROC LAST_ITEM_DELETE
 ```
 
@@ -173,12 +190,12 @@ CREATE PROC LAST_ITEM_DELETE
 >Правильно организуйте операторы
 
 Хорошо, однострочный оператор:
-```
+```sql
 SELECT UserName, Address 
 FROM dbo.my_table;
 ```
 Хорошо, многострочный оператор:
-```
+```sql
 SELECT ROW_NUMBER() OVER (ORDER BY user_name) row_num,
     user_name, address
 FROM dbo.Table_1 AS t1
@@ -191,7 +208,7 @@ WHERE t1.String = N'ABC'
     );
 ```
 Не хорошо (лишний перевод строки):
-```
+```sql
 SELECT 
     UserName 
 FROM 
@@ -201,7 +218,7 @@ WHERE
 ```
  
 Не хорошо (условие and должно стоять в начале условия):
-```
+```sql
 SELECT user_name, address
 FROM my_table_1
 WHERE id > 1 AND
@@ -209,7 +226,7 @@ WHERE id > 1 AND
 ```
  
 Избегайте смешивания подходов (отсутствует перевод строки перед FROM):
-```
+```sql
 SELECT user_name, address FROM my_table 
 WHERE value > 1;
 ```
@@ -220,7 +237,7 @@ WHERE value > 1;
 >Делайте отступы, соответствующие уровню вложенности условий. Обозначайте скобками группы условий только там, где это необходимо - объединяя группы из условий ИЛИ условием И.
 
 Хорошо:
-```
+```sql
 SELECT user_name, last_order_date
 FROM dbo.Table
 WHERE first_order_date > '20170101’ 
@@ -228,7 +245,7 @@ WHERE first_order_date > '20170101’
     AND deleted = 0;
 ```
 Не хорошо:
-```
+```sql
 SELECT 
     U.Name, U.LastOrderDate
 FROM dbo.[User] AS U
@@ -237,7 +254,7 @@ WHERE U.LastOrderDate > '2001-01-01' AND
 ```
  
 Не хорошо:
-```
+```sql
 SELECT 
     U.Name, U.LastOrderDate
 FROM dbo.[User] AS U
@@ -249,14 +266,14 @@ WHERE (U.LastOrderDate > '2001-01-01') AND (U.LastOrderDate < '2001-01-31'); -- 
 >При создании области видимости всегда делайте отступ. 
 >(Рекомендация от себя: при сложных конструкциях, оставляйте комментарии в конце каждой конструкции)
 Хорошо:
-```
+```sql
 WHILE 1 = 1 BEGIN
     (...);
 END; -- WHILE 1 = 1
 ```
 
 Хорошо:
-```
+```sql
 WHILE 1 = 1 
 BEGIN
     (...);
@@ -264,13 +281,13 @@ END;
 ```
 
 Не хорошо:
-```
+```sql
 WHILE 1 = 1 
     BEGIN (...) END
 ```
 
 Не хорошо:
-```
+```sql
 WHILE 1 = 1 BEGIN (...) END
 ```
 
@@ -281,7 +298,7 @@ WHILE 1 = 1 BEGIN (...) END
 >LEFT JOIN / JOIN / CROSS APPLY и так далее.
 
 Хорошо:
-```
+```sql
 SELECT ROW_NUMBER() OBER (ORDER BY c.id) row_num,
     c.Name, SUM(o.Amount) AS Amount
 FROM dbo.Customers AS c
@@ -299,7 +316,7 @@ ORDER BY o.Amount DESC,
 >В случае, когда вы используете скобки вокруг многострочных выражений, пользуйтесь одним из ниже приведенных способов
 
 Хорошо (подобная конструкция так же используется в с#):
-```
+```sql
 RETURN
 (
     (...)
@@ -307,14 +324,14 @@ RETURN
 ```
 
 Хорошо (личная рекомендация. Избавляет от лишнего перевода строки):
-```
+```sql
 RETURN (
     (...)
 );
 ```
  
 Не хорошо:
-```
+```sql
 RETURN (
 (...) )
 ```
@@ -324,7 +341,7 @@ RETURN (
 >При использовании оператора IF всегда определяйте область видимости 
 >(Рекомендация оставляйте комментарии в конце конструкции)
 Хорошо:
-```
+```sql
 IF 1 > 2
 BEGIN
     (...);
@@ -336,7 +353,7 @@ END; -- IF 1 > 2
 ```
 
 Хорошо:
-```
+```sql
 IF 1 > 2 BEGIN
     (...);
 END
@@ -348,7 +365,7 @@ END; --правильно 
 
  
 Не хорошо:
-```
+```sql
 IF 1 > 2
     (...)
 ELSE
@@ -359,7 +376,7 @@ ELSE
 >Всегда определяйте область видимости при создании процедур и функций содержащих более одного оператора
 
 Хорошо:
-```
+```sql
 CREATE PROC dbo.MY_PROCEDURE @param INT
 AS
 BEGIN
@@ -367,7 +384,7 @@ BEGIN
 END;
 ```
 Не хорошо:
-```
+```sql
 CREATE PROCEDURE dbo.uspMyProcedure @param INT
 AS
     (...)
@@ -378,24 +395,24 @@ AS
 >Всегда окружайте пробелами операторы в выражениях (равно, не равно, плюс, минус, меньше, больше, умножение, деление и др)
 
 Хорошо:
-```
+```sql
 SET @i += 1;
 ```
 
 Хорошо:
-```
+```sql
 SELECT @start_date = min(start_date) 
 FROM dbo.Table
 WHERE deleted = 0;
 ```
 
 Не хорошо:
-```
+```sql
 SET  @i=1;	
 ```
 
 Не хорошо:
-```
+```sql
 SELECT @start_date=min(start_date) 
 FROM dbo.Table 
 WHERE deleted=0 AND StartDate>'2010-01-01';
@@ -405,14 +422,14 @@ WHERE deleted=0 AND StartDate>'2010-01-01';
 ## Алиасы и джойны
 >При выполнении джойнов всегда идентифицируйте все столбцы при помощи алиасов. Ключевое слово AS можно опустить.
 Хорошо:
-```
+```sql
 SELECT u.surname, a.street
 FROM dbo.Customer AS u
     JOIN address AS a ON u.address_id = a.address_id;
 ```
  
 Не хорошо:
-```
+```sql
 SELECT U.Surname, Street
 FROM dbo.Users U
 JOIN dbo.Address ON U.AddressID = dbo.Address.AddressID
@@ -423,7 +440,7 @@ JOIN dbo.Address ON U.AddressID = dbo.Address.AddressID
 >Избегайте джойнов, используя секцию WHERE. Вместо этого используйте стиль ANSI. Ключ, на который ссылается JOIN должен стоять в конце.
 
 Хорошо:
-```
+```sql
 SELECT u.surname, a.street
 FROM dbo.Customer AS u
     JOIN address AS a ON a.address_id = u.address_id
@@ -431,7 +448,7 @@ FROM dbo.Customer AS u
 ```
  
 Не хорошо:
-```
+```sql
 SELECT u.surname, a.street
 FROM Customer AS u, address AS a
 WHERE U.AddressID = A.AddressID
@@ -452,14 +469,14 @@ WHERE U.AddressID = A.AddressID
 >(исключение – генерация композитного идентификатора функцией dbo.fn_getIdEx)
 
 Хорошо:
-```
+```sql
 SELECT name,
     cast(id / 281474976710656 AS smallint) AS node_id
 FROM dbo.Table;
 ```
  
 Не хорошо:
-```
+```sql
 SELECT name,
     dbo.fn_GetNodeIdFROMCompositeId(id) AS node_id	 
 FROM Table;
@@ -470,7 +487,7 @@ FROM Table;
 >Дело в том что если каждый раз делать DROP и CREATE, то удаляются права на объект, а еще объект может быть в репликации и при пересоздании, из неё он удалится тоже. 
 
 Хорошо:
-```
+```sql
 IF OBJECT_ID('dbo.Function, 'IF') IS NULL
     EXEC('CREATE FUNCTION dbo.Function() RETURNS @t TABLE(i INT) BEGIN RETURN END');
 GO
@@ -478,7 +495,7 @@ ALTER FUNCTION() ..
 ```
 
 Хорошо:
-```
+```sql
 IF OBJECT_ID('dbo.Procedure') IS NULL
     EXEC('CREATE PROC dbo.Procedure AS');
 GO
@@ -486,8 +503,8 @@ ALTER PROC dbo.Procedure ..
 ```
 
 Не хорошо:
-```
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = 	OBJECT_ID(N'dbo.’MY_PROCEDURE’)
+```sql
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'dbo.MY_PROCEDURE')
     AND type in (N'FN', N'IF', N'TF', N'FS', N'FT'))
 DROP FUNCTION dbo.MY_PROCEDURE
 GO
@@ -498,7 +515,7 @@ GO
 
 ## Включайте в свои процедуры строку SET NOCOUNT ON;
 Хорошо:
-```
+```sql
 CREATE PROC dbo.Procedure @i INT
 AS 
 BEGIN
@@ -515,7 +532,7 @@ GO
 
 ## Используйте TRY – CATCH для отлова ошибок
 Хорошо:
-```
+```sql
 BEGIN TRY
     --код
 END TRY
