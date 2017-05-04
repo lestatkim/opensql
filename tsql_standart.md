@@ -42,9 +42,14 @@ SET @i = @i + 1
 
 Не хорошо:
 ```sql
-SELECT ct.com_id, cdt.com_name, ct.tax_id, pt.tax_name, tt.date  FROM com_table AS ct JOIN com_des_table AS cdt ON cdt.id = ct.com_id LEFT OUTER JOIN  payments_table AS pt ON pt.id =  ct.tax_id LEFT OUTER JOIN tax_table AS tt ON tt.tax_id = ct.tax_id WHERE ct.tax_id LIKE '001%' and ct.com_id = '1' 
+SELECT *
+FROM (SELECT DISTINCT r.object_id AS region_key ,n.node_id AS containedobjectsbasement_key ,n1.container_node_id AS container_node_id ,e.node_id AS  containedobjectsexchange_key, CAST(name2(e.node_id, e.exchange_class_id) AS VARCHAR2(128) ) AS object_name, e.exchange_mount_capacity AS  exchange_mount_capacity FROM number_interval WHERE exchange_id = e.node_id) AS VARCHAR2(1024) ) AS number_ranges
+    ,(SELECT e1.exchange_type_name FROM exchange_tl e1 WHERE e1.exchange_type_id = e.exchange_type_id) AS exchange_type_name, CAST( (SELECT s3.licence_number
+    FROM service_operator_type s3 WHERE s3.service_operator_type_id = e.operator_id) AS VARCHAR2(64) ) AS operator_licence_number
+    ,(SELECT t.trace_line_relay_type_name FROM trace_line_relay_type t WHERE t.trace_line_relay_type_id = s.trace_line_relay_type_id) AS trace_line_relay_type_name ,s.object_id trace_line_id, NAME(s1.exchange_id) otkuda_nax ,NAME(trace_line.exchange_id) kuda_blya
+                         ,(SELECT SUM(TO_NUMBER(n.last_number) - TO_NUMBER(n.first_number) 
+WHERE s.object_id = s1.object_id AND s1.exchange_id = e.node_id AND trace_line.service_id = s1.object_id AND e.node_id = n1.node_id AND n1.container_node_id= n.node_id AND e.exchange_class_id = 100 AND n2.container_node_id = n.node_id AND n2.entity_id = 108 AND n.region_id = r.object_id AND n.node_type_id = 115 AND r.object_id = :region_key AND n1.node_id = o.object_id AND o.object_owner_type_id = 3) sel
 ```
-
 Хорошо:
 ```sql
 SELECT ct.com_id, cdt.com_name, 
@@ -54,7 +59,7 @@ FROM dbo.com_table AS ct
     LEFT JOIN dbo.payments_table AS pt ON pt.id = ct.tax_id 
     LEFT JOIN dbo.tax_table AS tt ON ct.tax_id = tt.tax_id
 WHERE ct.tax_id LIKE '001%' 
-    AND ct.com_id = '1' 
+    AND ct.com_id = '1'
 ```
 
 
