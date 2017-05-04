@@ -1,5 +1,5 @@
 # Стандарт оформления T-SQL
-###### версия 1.0.4.2
+###### версия 1.0.4.3
 
 ____________________________________________________________
 
@@ -9,7 +9,7 @@ ____________________________________________________________
 |------|-----|-------|------------------|------|
 |Database|30| |[A-z]|MyDatabase|
 |Database Trigger|50|DTR_|[A-z]|DTR_CheckLogin|
-|Schema|30| |[A-z][0-9]|myschema|
+|Schema|30| |[A-z][0-9]|MySchema|
 |File Table|128|FT_|[A-z][0-9]|FT_MyTable|
 |Global Temporary Table|128| |##[A-z][0-9]|##MyTable|
 |Local Temporary Table|128| |#[A-z][0-9]|#MyTable|
