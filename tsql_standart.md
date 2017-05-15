@@ -1,5 +1,5 @@
 # Стандарт оформления T-SQL
-###### версия 1.0.4.4
+###### версия 1.0.4.5
 
 ____________________________________________________________
 
@@ -40,11 +40,6 @@ SET @i = @i + 1
 > несколько открытых файлов бок о бок, и хорошо работает при использовании инструментов анализа кода, 
 > которые предоставляют две версии в соседних столбцах
 
-Не хорошо:
-```sql
-SELECT ct.com_id, cdt.com_name, ct.tax_id, pt.tax_name, tt.date  FROM com_table AS ct JOIN com_des_table AS cdt ON cdt.id = ct.com_id LEFT OUTER JOIN  payments_table AS pt ON pt.id =  ct.tax_id LEFT OUTER JOIN tax_table AS tt ON tt.tax_id = ct.tax_id WHERE ct.tax_id LIKE '001%' and ct.com_id = '1' 
-```
-
 Хорошо:
 ```sql
 SELECT ct.com_id, cdt.com_name, 
@@ -54,12 +49,19 @@ FROM dbo.com_table AS ct
     LEFT JOIN dbo.payments_table AS pt ON pt.id = ct.tax_id 
     LEFT JOIN dbo.tax_table AS tt ON ct.tax_id = tt.tax_id
 WHERE ct.tax_id LIKE '001%' 
-    AND ct.com_id = '1' 
+    AND ct.com_id = '1';
+```
+
+Не хорошо:
+```sql
+SELECT ct.com_id, cdt.com_name, ct.tax_id, pt.tax_name, tt.date  FROM com_table AS ct JOIN com_des_table AS cdt ON cdt.id = ct.com_id LEFT OUTER JOIN  payments_table AS pt ON pt.id =  ct.tax_id LEFT OUTER JOIN tax_table AS tt ON tt.tax_id = ct.tax_id WHERE ct.tax_id LIKE '001%' and ct.com_id = '1'
 ```
 
 
+
+
 ## Комментарии
-> Создавайте комментарии в хранимых процедурах, 
+> Создавайте комментарии в хранимых процедурах,
 > триггерах и скриптах, когда что-либо не является очевидным.
 > В первую очередь пишите зачем нужен этот код, а не что он делает
 
@@ -78,7 +80,9 @@ WHERE ct.tax_id LIKE '001%'
 
 
 ## Не используйте * в запросах. Указывайте названия столбцов явно
-
+>Разница будет и во времени выполнении запроса и в том, 
+>что будет возможность сделать меньше логических чтений 
+>за счет покрывающего индекса
 Хорошо:
 ```sql
 SELECT CustomerID, Street, City
@@ -88,12 +92,13 @@ WHERE City = N‘Санкт-Петербург’;
 Не хорошо:
 ```sql
 SELECT * 
-FROM dbo.Address 
+FROM dbo.Address
 WHERE City = N‘Санкт-Петербург’;
 ```
 
 
 ## Используйте нативные названия переменных. Избегайте аббревиатур и односимвольных имен
+> Это поможет понять код Вам и Вашим коллегам
 Хорошо:
 ```sql
 DECLARE
@@ -110,15 +115,22 @@ DECLARE
  
 
 ## Соблюдайте DRY (не повторяйтесь)
+>Принцип DRY формулируется как: 
+>«Каждая часть знания должна иметь единственное, 
+>непротиворечивое и авторитетное представление в рамках системы»
+>Нарушения принципа DRY называют WET — 
+>«Write Everything Twice» (рус. Пиши всё по два раза)
 Хорошо:
 ```sql
 DECLARE
     @item_weight INT,
-    @company_name NVARCHAR(16);
+    @company_name NVARCHAR(16)
+;
 
 SELECT
     @item_weight = 10,
-    @company_name = N‘Microsoft’;
+    @company_name = N‘Microsoft’
+;
 ```
 
 Избегайте:
@@ -135,7 +147,7 @@ SET @s = ‘Apple’
 > Best practice: Используйте инструкцию SET - для констант, SELECT - для литералов
 
 
-## Используйте нижнее_подчеркивание для именования составных пользовательских объектов или CamelStyle
+## Используйте CamelStyle или нижнее_подчеркивание для именования составных пользовательских объектов
 Хорошо:
 ```sql
 CREATE TABLE dbo.MyTable (
@@ -148,7 +160,7 @@ CREATE TABLE dbo.my_table
 );
 
 CREATE PROC dbo.KC_MY_PROC 
-    @date_FROM DATE,
+    @date_from DATE,
     @date_to DATE
 ...
 ```
@@ -175,7 +187,9 @@ DECLARE strangevariableforsomething INT;
 
 
 ## (Рекомендуется) Используйте имена таблиц - в единственном числе
-
+>Единственным разумным доводом для этого утверждения
+>является тот факт, что в Английском языке, у некоторых слов,
+>форма множественного числа описывается не явно
 Хорошо:
 ```sql
 CREATE TABLE dbo.Address;
@@ -187,35 +201,19 @@ CREATE TABLE dbo.Addresses;
 ```
 
 ## Вставка во временные таблицы
-> При вставке во временную таблицу, используйте конструкцию
-> SELECT INTO
+> При вставке во временную таблицу без использования
+> дополнительных архитектурных настроек, 
+> используйте конструкцию 
+> SELECT * INTO #table FROM…
 > Это поможет избежать двух лишних компиляций
 
-Хорошо:
+Пример:
 ```sql
 SELECT id, val
 INTO #tmp_Table 
 FROM (
     SELECT ..
 );
-```
-
-Не хорошо:
-```sql
-CREATE TABLE #tmp_Table (
-    id INT,
-    val VARCHAR(32)
-);
-INSERT INTO #tmp_Table (
-    id,
-    val
-)
-    SELECT ..
-    ;
-
-..
-
-DROP TABLE #tmp_Table;
 ```
 
 ## Наименование foreing key - используйте сначала имя родительской таблицы
@@ -229,7 +227,6 @@ fk_ParentTableName_ChildTableName
 ```sql
 fk_ChildTableName_ParentTableName
 ```
-
 
 
 ## Используйте схему
@@ -300,15 +297,16 @@ WHERE value > 1;
 ```sql
 SELECT user_name, last_order_date
 FROM dbo.Table
-WHERE first_order_date > '20170101’ 
-    AND last_order_date < ‘20170414’
-    AND deleted = 0;
+WHERE first_order_date > '20170101'
+    AND last_order_date < '20170414'
+    AND deleted = 0
+;
 ```
 Не хорошо:
 ```sql
 SELECT 
     U.Name, U.LastOrderDate
-FROM dbo.[User] AS U
+FROM dbo.Table AS T
 WHERE U.LastOrderDate > '2001-01-01' AND
     U.LastOrderDate < '2001-01-31' AND U.deleted = 0;
 ```
@@ -317,14 +315,14 @@ WHERE U.LastOrderDate > '2001-01-01' AND
 ```sql
 SELECT 
     U.Name, U.LastOrderDate
-FROM dbo.[User] AS U
+FROM dbo.Table AS T
 WHERE (U.LastOrderDate > '2001-01-01') AND (U.LastOrderDate < '2001-01-31'); -- лишние скобки
 ```
 
 
 ## Отступы, область видимости
 >При создании области видимости всегда делайте отступ. 
->(Рекомендация от себя: при сложных конструкциях, оставляйте комментарии в конце каждой конструкции)
+>(Рекомендация от себя: при сложных конструкциях, оставляйте комментарии в конце большой конструкции)
 Хорошо:
 ```sql
 WHILE 1 = 1 BEGIN
@@ -369,7 +367,7 @@ WHERE c.Region = 'USA'
 GROUP BY c.Name
 HAVING SUM(o.Amount) > 100
 ORDER BY o.Amount DESC,
-    c.Name ASC
+    c.Name ASC;
 ```
 
 ## Скобки
@@ -399,7 +397,7 @@ RETURN (
 
 ## Область видимости и условные операторы
 >При использовании оператора IF всегда определяйте область видимости 
->(Рекомендация оставляйте комментарии в конце конструкции)
+>(Рекомендация оставляйте комментарии в конце больших конструкций)
 Хорошо:
 ```sql
 IF 1 > 2
@@ -422,7 +420,6 @@ ELSE BEGIN
     (...);
 END; --правильно 
 ```
-
  
 Не хорошо:
 ```sql
@@ -440,8 +437,13 @@ ELSE
 CREATE PROC dbo.MY_PROCEDURE @param INT
 AS
 BEGIN
+SET NOCOUNT ON
+
     (...);
-END;
+
+SET NOCOUNT OFF
+END
+GO;
 ```
 Не хорошо:
 ```sql
@@ -480,12 +482,12 @@ WHERE deleted=0 AND StartDate>'2010-01-01';
 
 
 ## Алиасы и джойны
->При выполнении джойнов всегда идентифицируйте все столбцы при помощи алиасов. Ключевое слово AS можно опустить.
+>При выполнении джойнов всегда идентифицируйте все столбцы при помощи алиасов
 Хорошо:
 ```sql
-SELECT u.surname, a.street
+SELECT u.Surname, a.Street
 FROM dbo.Customer AS u
-    JOIN address AS a ON u.address_id = a.address_id;
+    JOIN dbo.Address AS a ON u.address_id = a.address_id;
 ```
  
 Не хорошо:
@@ -501,9 +503,9 @@ JOIN dbo.Address ON U.AddressID = dbo.Address.AddressID
 
 Хорошо:
 ```sql
-SELECT u.surname, a.street
+SELECT u.Surname, a.Street
 FROM dbo.Customer AS u
-    JOIN address AS a ON a.address_id = u.address_id
+    JOIN dbo.Address AS a ON a.address_id = u.address_id
         AND a.field_1 = u.field_1;
 ```
  
@@ -513,7 +515,6 @@ SELECT u.surname, a.street
 FROM Customer AS u, address AS a
 WHERE U.AddressID = A.AddressID
 ```
-
 
 
 ## Хинты
@@ -526,8 +527,8 @@ WHERE U.AddressID = A.AddressID
 
 Хорошо:
 ```sql
-SELECT name,
-    cast(id / 281474976710656 AS smallint) AS node_id
+SELECT Name,
+    CAST(id / 281474976710656 AS SMALLINT) AS node_id
 FROM dbo.Table;
 ```
  
