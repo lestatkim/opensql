@@ -1,5 +1,5 @@
 # Стандарт оформления T-SQL
-###### версия 1.0.4.5
+###### версия 1.0.4.6
 
 ____________________________________________________________
 
@@ -20,7 +20,7 @@ ____________________________________________________________
 
 
 ## Завершайте каждый оператор в задании точкой с запятой
-
+>Признак конца инструкции Transact-SQL. Хотя точка с запятой не требуется для большинства инструкций, но она понадобится в следующей версии
 Хорошо:
 ```sql
 CREATE TABLE dbo.UserInformation (ID INT);
@@ -56,8 +56,6 @@ WHERE ct.tax_id LIKE '001%'
 ```sql
 SELECT ct.com_id, cdt.com_name, ct.tax_id, pt.tax_name, tt.date  FROM com_table AS ct JOIN com_des_table AS cdt ON cdt.id = ct.com_id LEFT OUTER JOIN  payments_table AS pt ON pt.id =  ct.tax_id LEFT OUTER JOIN tax_table AS tt ON tt.tax_id = ct.tax_id WHERE ct.tax_id LIKE '001%' and ct.com_id = '1'
 ```
-
-
 
 
 ## Комментарии
@@ -147,7 +145,7 @@ SET @s = ‘Apple’
 > Best practice: Используйте инструкцию SET - для констант, SELECT - для литералов
 
 
-## Используйте CamelStyle или нижнее_подчеркивание для именования составных пользовательских объектов
+## Используйте CamelStyle или under_score для именования составных пользовательских объектов
 Хорошо:
 ```sql
 CREATE TABLE dbo.MyTable (
@@ -601,6 +599,7 @@ END CATCH;
 
 __________________________________________________________________
  *_Спасибо за внимание_*
+ 
 
 [sqlcom](http://sqlcom.ru)
 
