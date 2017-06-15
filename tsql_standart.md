@@ -306,7 +306,8 @@ SELECT
     U.Name, U.LastOrderDate
 FROM dbo.Table AS T
 WHERE U.LastOrderDate > '2001-01-01' AND
-    U.LastOrderDate < '2001-01-31' AND U.deleted = 0;
+    U.LastOrderDate < '2001-01-31' AND U.deleted = 0
+;
 ```
  
 Не хорошо:
@@ -324,16 +325,20 @@ WHERE (U.LastOrderDate > '2001-01-01') AND (U.LastOrderDate < '2001-01-31'); -- 
 Хорошо:
 ```sql
 WHILE 1 = 1 BEGIN
-    (...);
-END; -- WHILE 1 = 1
+    (...)
+    ;
+END -- WHILE 1 = 1
+;
 ```
 
 Хорошо:
 ```sql
 WHILE 1 = 1 
 BEGIN
-    (...);
-END;
+    (...)
+    ;
+END
+;
 ```
 
 Не хорошо:
@@ -353,8 +358,8 @@ WHILE 1 = 1 BEGIN (...) END
 
 Хорошо:
 ```sql
-SELECT ROW_NUMBER() OBER (ORDER BY c.id) row_num,
-    c.Name, SUM(o.Amount) AS Amount
+SELECT ROW_NUMBER() OVER (ORDER BY c.id) RowNum
+    , c.Name, SUM(o.Amount) AS Amount
 FROM dbo.Customers AS c
     JOIN dbo.Orders AS o ON c.id = o.id 
         AND o.date = c.date
@@ -362,8 +367,9 @@ WHERE c.Region = 'USA'
     AND c.Gender = 'Female' 
 GROUP BY c.Name
 HAVING SUM(o.Amount) > 100
-ORDER BY o.Amount DESC,
-    c.Name ASC;
+ORDER BY o.Amount DESC
+    , c.Name ASC
+;
 ```
 
 ## Скобки
@@ -398,23 +404,29 @@ RETURN (
 ```sql
 IF 1 > 2
 BEGIN
-    (...);
+    (...)
+    ;
 END
+;
 
 ELSE BEGIN
-    (...);
-END; -- IF 1 > 2
+    (...)
+    ;
+END -- IF 1 > 2
+;
 ```
 
 Хорошо:
 ```sql
 IF 1 > 2 BEGIN
-    (...);
+    (...)
+    ;
 END
-
 ELSE BEGIN
-    (...);
-END; --правильно 
+    (...)
+    ;
+END
+; 
 ```
  
 Не хорошо:
@@ -430,16 +442,18 @@ ELSE
 
 Хорошо:
 ```sql
-CREATE PROC dbo.MY_PROCEDURE @param INT
+ALTER PROC dbo.MY_PROCEDURE @param INT
 AS
 BEGIN
 SET NOCOUNT ON
-
-    (...);
+;
+    (...)
+    ;
 
 SET NOCOUNT OFF
+;
 END
-GO;
+GO
 ```
 Не хорошо:
 ```sql
@@ -454,19 +468,21 @@ AS
 
 Хорошо:
 ```sql
-SET @i += 1;
+SET @i += 1
+;
 ```
 
 Хорошо:
 ```sql
-SELECT @start_date = min(start_date) 
+SELECT @start_date = MIN(start_date) 
 FROM dbo.Table
-WHERE deleted = 0;
+WHERE deleted = 0
+;
 ```
 
 Не хорошо:
 ```sql
-SET  @i=1;	
+SET @i=1;	
 ```
 
 Не хорошо:
@@ -476,6 +492,9 @@ FROM dbo.Table
 WHERE deleted=0 AND StartDate>'2010-01-01';
 ```
 
+## IN vs EXISTS
+>Оператор IN используется когда справа строк меньше чем слева
+>Оператор EXISTS используется когда справа строк больше
 
 ## Алиасы и джойны
 >При выполнении джойнов всегда идентифицируйте все столбцы при помощи алиасов
