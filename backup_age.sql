@@ -1,8 +1,9 @@
-/*  Author: Sergey Lobanov
+/*  Author: marc_s
+    https://dba.meta.stackexchange.com/users/807/marc-s
 /*
 
-WITH LastRestores AS
-	(
+WITH 
+    LastRestores AS	(
 		SELECT
 		    DatabaseName = [d].[name]
 		    , [d].[create_date]
