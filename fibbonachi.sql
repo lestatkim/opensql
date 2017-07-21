@@ -22,7 +22,7 @@ SET NOCOUNT ON
             FROM t
             WHERE val !> @i
         )
-    SELECT CAST(val AS NVARCHAR) + ',' AS [text()]
+    SELECT CAST(val AS NVARCHAR) + ', ' AS [text()]
     FROM t
     FOR XML PATH('')
     ;
