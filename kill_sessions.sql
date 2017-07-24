@@ -14,7 +14,7 @@ DECLARE
 ;
 
 INSERT INTO @table
-    SELECT ROW_NUMBER() OVER (ORDER BY spid)
+    SELECT ROW_NUMBER() OVER (ORDER BY (SELECT NULL))
         , spid
     FROM sys.sysprocesses
     WHERE spid > 50 
