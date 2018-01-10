@@ -11,3 +11,4 @@ SET QUERY_STORE
 	MAX_PLANS_PER_QUERY = 200
 );
 
+https://www.sqlskills.com/blogs/erin/query-store-settings/
