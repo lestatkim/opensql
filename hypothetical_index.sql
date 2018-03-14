@@ -1,3 +1,4 @@
+--Author: Ivanov Dmitry
 /*Создаем гипотетический индекс*/
 CREATE NONCLUSTERED INDEX [IXO_Test]
 ON [dbo].[Booking_tbl] ([Booked])
