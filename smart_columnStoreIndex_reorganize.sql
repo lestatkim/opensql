@@ -1,4 +1,4 @@
-/*	Autor: Dmitry Zaicev
+п»ї/*	Autor: Dmitry Zaicev
 	Decor: Lestat Kim
 */
 DECLARE 
@@ -93,8 +93,8 @@ BEGIN
             END TRY
             BEGIN CATCH
                 PRINT (
-					'INDEX - Номер ошибки ' + CAST(ERROR_NUMBER() AS NVARCHAR(50)) + ', в строке '
-					+ CAST(ERROR_LINE() AS NVARCHAR(50)) + '. Сообщение об ошибке: '
+					'INDEX - РќРѕРјРµСЂ РѕС€РёР±РєРё ' + CAST(ERROR_NUMBER() AS NVARCHAR(50)) + ', РІ СЃС‚СЂРѕРєРµ '
+					+ CAST(ERROR_LINE() AS NVARCHAR(50)) + '. РЎРѕРѕР±С‰РµРЅРёРµ РѕР± РѕС€РёР±РєРµ: '
 					+ CAST(ERROR_MESSAGE() AS NVARCHAR(400))
 					+ CONVERT(VARCHAR(32), GETDATE())
 					)
