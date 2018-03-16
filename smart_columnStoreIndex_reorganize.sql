@@ -10,6 +10,8 @@ DECLARE
 	, @sql NVARCHAR(MAX)
 	, @database_name sysname
 	, @columnstore_indexes_count INT
+	, @type TINYINT
+	, @defrag FLOAT = ''
 ;
 
 SELECT @database_name = DB_ID()
@@ -22,8 +24,8 @@ IF CAST(SUBSTRING(
 	> 11
 BEGIN
     SELECT
-		  @schemaName = ''
-		, @tableName = ''
+		  @schemaName = 'sap'
+		, @tableName = 'DDS'
 		, @indexName = ''
 		, @partition_number = ''
 		, @max_partition_number = ''
@@ -58,8 +60,10 @@ BEGIN
     INTO @schemaName,
          @tableName,
          @indexName,
+		 @defrag,
          @partition_number,
-         @max_partition_number
+         @max_partition_number,
+		 @type
 
     WHILE @@FETCH_STATUS = 0
     BEGIN
@@ -106,10 +110,11 @@ BEGIN
         INTO @schemaName,
              @tableName,
              @indexName,
+             @defrag,
              @partition_number,
-             @max_partition_number
-    END;
-
+			 @max_partition_number,
+			 @type
+		END;
 
     CLOSE defragCC;
     DEALLOCATE defragCC;
