@@ -27,9 +27,6 @@ WITH
 			, _c.max_length [Max_length]
 			, _c.is_nullable [Nullable]
 			, (
-				  /*	:return: int
- 						is Field == Primary_key
- 					*/
 				  SELECT COUNT(COLUMN_NAME)
 				  FROM INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE
 				  WHERE TABLE_NAME = _t.name
