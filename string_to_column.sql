@@ -12,8 +12,6 @@ if object_id('STRING_TO_COLUMN') is not null
 
 create function STRING_TO_COLUMN(  @str varchar(max), @delimeter char(1) )
 
-    /*  don't forget to click on Star ;) if u like it
-    */
     returns @t table ( name nvarchar(max) )
     as 
     BEGIN
@@ -40,6 +38,16 @@ create function STRING_TO_COLUMN(  @str varchar(max), @delimeter char(1) )
 
     return
     END
+GO
 
---github@LestatKim/openSql
+
+--xml
+
+DECLARE @xml as xml,@str as varchar(100),@delimiter as varchar(10)
+SET @str='A,B,C,D,E'
+SET @delimiter =','
+SET @xml = cast(('<X>'+replace(@str,@delimiter ,'</X><X>')+'</X>') as xml)
+SELECT N.value('.', 'varchar(10)') as value 
+FROM @xml.nodes('X') as T(N)
+;
 
