@@ -1,3 +1,5 @@
+USE master
+GO
 
 CREATE OR ALTER PROC dbo.sp_ccsiRebuild 
 	@schema_name SYSNAME
